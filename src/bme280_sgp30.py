@@ -8,6 +8,29 @@ import digitalio
 from adafruit_bme280 import basic as adafruit_bme280
 import adafruit_sgp30
 
+led1 = digitalio.DigitalInOut(board.GP13)
+led1.direction = digitalio.Direction.OUTPUT
+led2 = digitalio.DigitalInOut(board.GP12)
+led2.direction = digitalio.Direction.OUTPUT
+led3 = digitalio.DigitalInOut(board.GP11)
+led3.direction = digitalio.Direction.OUTPUT
+led4 = digitalio.DigitalInOut(board.GP10)
+led4.direction = digitalio.Direction.OUTPUT
+led5 = digitalio.DigitalInOut(board.GP9)
+led5.direction = digitalio.Direction.OUTPUT
+
+co2_l1 = 350
+co2_l2 = 400
+co2_l3 = 450
+co2_l4 = 500
+co2_l5 = 550
+
+t_l1 = 20
+t_l2 = 22
+t_l3 = 24
+t_l4 = 26
+t_l5 = 28
+
 # Create sensor object, using the board's default I2C bus.
 # i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
 # bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
@@ -29,6 +52,25 @@ sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
 bme280.sea_level_pressure = 1017.3 
 elapsed_sec = 0
 
+def ledON(cd, a, b, c, d, e):
+    if cd > e:
+        led5.value = True
+    if cd > d:
+        led4.value = True
+    if cd > c:
+        led3.value = True
+    if cd > b:
+        led2.value = True
+    if cd > a:
+        led1.value = True
+
+def ledOFF():
+    led1.value = False
+    led2.value = False
+    led3.value = False
+    led4.value = False
+    led5.value = False
+
 while True:
     sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
     celsius = bme280.temperature
@@ -39,6 +81,9 @@ while True:
     print("Pressure: %0.1f hPa" % bme280.pressure)
     print("Altitude = %0.2f meters" % bme280.altitude)
     print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
+    ledOFF()
+    # ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
+    ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
     time.sleep(1)
     
     elapsed_sec += 1

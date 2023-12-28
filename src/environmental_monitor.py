@@ -45,11 +45,15 @@ bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 i2c = busio.I2C(board.GP1, board.GP0, frequency=100000)
 sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
+#co2eq_base = 65327
+#tvoc_base = 65327
+#sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
+#print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 
-bme280.sea_level_pressure = 1017.3 
+bme280.sea_level_pressure = 1017.3
 elapsed_sec = 0
 
 def ledON(cd, a, b, c, d, e):
@@ -69,13 +73,13 @@ def led(val):
     led2.value = val
     led3.value = val
     led4.value = val
-    led5.value = val    
+    led5.value = val
 
 while True:
-    sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
+    # sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
     celsius = bme280.temperature
     RH = bme280.relative_humidity
-    # sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
+    sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
     print("\nTemperature: %0.1f C" % celsius)
     print("Humidity: %0.1f %%" % RH)
     print("Pressure: %0.1f hPa" % bme280.pressure)
@@ -84,17 +88,18 @@ while True:
     led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
     time.sleep(1)
-    # led(False)
-    # led(True)
     time.sleep(0.5)
     led(False)
     ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
     time.sleep(1)
-    
+
     elapsed_sec += 1
-    if elapsed_sec > 10:
+    if elapsed_sec > 300:
         elapsed_sec = 0
+        co2eq_base = sgp30.baseline_eCO2 
+        tvoc_base = sgp30.baseline_TVOC
+        sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
         print(
             "**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x"
-            % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
+            % (co2eq_base, tvoc_base)
         )

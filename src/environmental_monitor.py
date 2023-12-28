@@ -19,11 +19,11 @@ led4.direction = digitalio.Direction.OUTPUT
 led5 = digitalio.DigitalInOut(board.GP9)
 led5.direction = digitalio.Direction.OUTPUT
 
-co2_l1 = 350
-co2_l2 = 400
-co2_l3 = 450
-co2_l4 = 500
-co2_l5 = 550
+co2_l1 = 400
+co2_l2 = 420
+co2_l3 = 440
+co2_l4 = 460
+co2_l5 = 500
 
 t_l1 = 18
 t_l2 = 20
@@ -45,10 +45,10 @@ bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 i2c = busio.I2C(board.GP1, board.GP0, frequency=100000)
 sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
-#co2eq_base = 65327
-#tvoc_base = 65327
-#sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
-#print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
+co2eq_base = 0xFF22
+tvoc_base = 0XFF21
+sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
+print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
@@ -94,7 +94,7 @@ while True:
     time.sleep(1)
 
     elapsed_sec += 1
-    if elapsed_sec > 300:
+    if elapsed_sec > 2:
         elapsed_sec = 0
         co2eq_base = sgp30.baseline_eCO2 
         tvoc_base = sgp30.baseline_TVOC

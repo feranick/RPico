@@ -53,7 +53,7 @@ print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base)
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 
-bme280.sea_level_pressure = 1017.3
+bme280.sea_level_pressure = 1006.0
 elapsed_sec = 0
 
 def ledON(cd, a, b, c, d, e):
@@ -94,7 +94,7 @@ while True:
     time.sleep(1)
 
     elapsed_sec += 1
-    if elapsed_sec > 2:
+    if elapsed_sec > 300:
         elapsed_sec = 0
         co2eq_base = sgp30.baseline_eCO2 
         tvoc_base = sgp30.baseline_TVOC

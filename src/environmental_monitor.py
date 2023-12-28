@@ -25,11 +25,11 @@ co2_l3 = 450
 co2_l4 = 500
 co2_l5 = 550
 
-t_l1 = 20
-t_l2 = 22
-t_l3 = 24
-t_l4 = 26
-t_l5 = 28
+t_l1 = 18
+t_l2 = 20
+t_l3 = 22
+t_l4 = 24
+t_l5 = 26
 
 # Create sensor object, using the board's default I2C bus.
 # i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
@@ -64,12 +64,12 @@ def ledON(cd, a, b, c, d, e):
     if cd > a:
         led1.value = True
 
-def ledOFF():
-    led1.value = False
-    led2.value = False
-    led3.value = False
-    led4.value = False
-    led5.value = False
+def led(val):
+    led1.value = val
+    led2.value = val
+    led3.value = val
+    led4.value = val
+    led5.value = val    
 
 while True:
     sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
@@ -81,9 +81,14 @@ while True:
     print("Pressure: %0.1f hPa" % bme280.pressure)
     print("Altitude = %0.2f meters" % bme280.altitude)
     print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
-    ledOFF()
-    # ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
+    led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
+    time.sleep(1)
+    # led(False)
+    # led(True)
+    time.sleep(0.5)
+    led(False)
+    ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
     time.sleep(1)
     
     elapsed_sec += 1

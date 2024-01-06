@@ -1,6 +1,9 @@
-# SPDX-FileCopyrightText: 2021 ladyada for Adafruit Industries
-# SPDX-License-Identifier: MIT
 
+#**********************************************
+#* Environmental Monitor - Rasperry Pico
+#* v2024.01.06.1
+#* By: Nicola Ferralis <feranick@hotmail.com>
+#**********************************************
 import time
 import board
 import busio
@@ -8,9 +11,39 @@ import digitalio
 from adafruit_bme280 import basic as adafruit_bme280
 import adafruit_sgp30
 
+############################
+# User variable definitions
+############################
 serial = True
 time_leds_on = 2
+co2eq_base = 0xFF22
+tvoc_base = 0XFF21
 
+# change this to match the location's pressure (hPa) at sea level
+# https://w1.weather.gov/data/obhistory/KBOS.html
+sea_level_pressure = 1021.7
+
+co2_l1 = 400
+co2_l2 = 800
+co2_l3 = 1200
+co2_l4 = 1600
+co2_l5 = 2000
+
+tvoc_l1 = 200
+tvoc_l2 = 400
+tvoc_l3 = 600
+tvoc_l4 = 800
+tvoc_l5 = 1000
+
+t_l1 = 18
+t_l2 = 20
+t_l3 = 22
+t_l4 = 24
+t_l5 = 26
+
+############################
+# Sensor initialization
+############################
 led1 = digitalio.DigitalInOut(board.GP13)
 led1.direction = digitalio.Direction.OUTPUT
 led2 = digitalio.DigitalInOut(board.GP12)
@@ -21,18 +54,6 @@ led4 = digitalio.DigitalInOut(board.GP10)
 led4.direction = digitalio.Direction.OUTPUT
 led5 = digitalio.DigitalInOut(board.GP9)
 led5.direction = digitalio.Direction.OUTPUT
-
-co2_l1 = 400
-co2_l2 = 420
-co2_l3 = 440
-co2_l4 = 460
-co2_l5 = 500
-
-t_l1 = 18
-t_l2 = 20
-t_l3 = 22
-t_l4 = 24
-t_l5 = 26
 
 # Create sensor object, using the board's default I2C bus.
 # i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
@@ -48,18 +69,16 @@ bme280 = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
 
 i2c = busio.I2C(board.GP1, board.GP0, frequency=100000)
 sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
-co2eq_base = 0xFF22
-tvoc_base = 0XFF21
 sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
 if serial:
     print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
 
-# change this to match the location's pressure (hPa) at sea level
-# https://w1.weather.gov/data/obhistory/KBOS.html
-
-bme280.sea_level_pressure = 1021.7
+bme280.sea_level_pressure = sea_level_pressure
 elapsed_sec = 0
 
+############################
+# Methods for LED control
+############################
 def ledON(cd, a, b, c, d, e):
     if cd > e:
         led5.value = True
@@ -84,6 +103,8 @@ def led_blink(a, t):
     i = 0
     if a == 1:
         ld = led1
+    if a == 3:
+        ld = led3
     if a == 5:
         ld = led5
     while i < 4:
@@ -95,17 +116,21 @@ def led_blink(a, t):
     time.sleep(t)
     led(False)
 
+############################
+# Main
+############################
 while True:
     # sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
     celsius = bme280.temperature
     RH = bme280.relative_humidity
     sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
     if serial:
-        print("\nTemperature: %0.1f C" % celsius)
-        print("Humidity: %0.1f %%" % RH)
-        print("Pressure: %0.1f hPa" % bme280.pressure)
-        print("Altitude = %0.2f meters" % bme280.altitude)
-        print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
+        print("\n Temperature: %0.1f C" % celsius)
+        print(" Humidity: %0.1f %%" % RH)
+        print(" Pressure: %0.1f hPa" % bme280.pressure)
+        print(" Altitude = %0.2f meters" % bme280.altitude)
+        print(" eCO2 = %d ppm" % sgp30.eCO2)
+        print(" TVOC = %d ppb" % sgp30.TVOC)
     led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
     time.sleep(time_leds_on)
@@ -113,8 +138,13 @@ while True:
     led(False)
     ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
     time.sleep(time_leds_on)
+    led_blink(3,1)
+    led(False)
+    ledON(sgp30.TVOC, tvoc_l1, tvoc_l2, tvoc_l3, tvoc_l4, tvoc_l5)
+    time.sleep(time_leds_on)
     led_blink(5,1)
-
+    
+    # Set baseline
     elapsed_sec += 1
     if elapsed_sec > 300:
         elapsed_sec = 0

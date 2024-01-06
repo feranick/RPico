@@ -8,6 +8,9 @@ import digitalio
 from adafruit_bme280 import basic as adafruit_bme280
 import adafruit_sgp30
 
+serial = True
+time_leds_on = 2
+
 led1 = digitalio.DigitalInOut(board.GP13)
 led1.direction = digitalio.Direction.OUTPUT
 led2 = digitalio.DigitalInOut(board.GP12)
@@ -48,12 +51,13 @@ sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
 co2eq_base = 0xFF22
 tvoc_base = 0XFF21
 sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
-print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
+if serial:
+    print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 
-bme280.sea_level_pressure = 1006.0
+bme280.sea_level_pressure = 1021.7
 elapsed_sec = 0
 
 def ledON(cd, a, b, c, d, e):
@@ -74,32 +78,48 @@ def led(val):
     led3.value = val
     led4.value = val
     led5.value = val
+    
+def led_blink(a, t):
+    led(False)
+    i = 0
+    if a == 1:
+        ld = led1
+    if a == 5:
+        ld = led5
+    while i < 4:
+        ld.value = True
+        time.sleep(0.5)
+        ld.value = False
+        time.sleep(0.5)
+        i += 1
+    time.sleep(t)
+    led(False)
 
 while True:
     # sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
     celsius = bme280.temperature
     RH = bme280.relative_humidity
     sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
-    print("\nTemperature: %0.1f C" % celsius)
-    print("Humidity: %0.1f %%" % RH)
-    print("Pressure: %0.1f hPa" % bme280.pressure)
-    print("Altitude = %0.2f meters" % bme280.altitude)
-    print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
+    if serial:
+        print("\nTemperature: %0.1f C" % celsius)
+        print("Humidity: %0.1f %%" % RH)
+        print("Pressure: %0.1f hPa" % bme280.pressure)
+        print("Altitude = %0.2f meters" % bme280.altitude)
+        print("eCO2 = %d ppm \t TVOC = %d ppb" % (sgp30.eCO2, sgp30.TVOC))
     led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
-    time.sleep(1)
-    time.sleep(0.5)
+    time.sleep(time_leds_on)
+    led_blink(1,1)
     led(False)
     ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
-    time.sleep(1)
+    time.sleep(time_leds_on)
+    led_blink(5,1)
 
     elapsed_sec += 1
     if elapsed_sec > 300:
         elapsed_sec = 0
-        co2eq_base = sgp30.baseline_eCO2 
+        co2eq_base = sgp30.baseline_eCO2
         tvoc_base = sgp30.baseline_TVOC
         sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
-        print(
-            "**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x"
-            % (co2eq_base, tvoc_base)
-        )
+        if serial:
+            print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))

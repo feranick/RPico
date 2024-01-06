@@ -16,8 +16,8 @@ import adafruit_sgp30
 ############################
 serial = True
 time_leds_on = 3
-co2eq_base = 0xFF22
-tvoc_base = 0XFF21
+co2eq_base = 0x958a
+tvoc_base = 0x8ed3
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
@@ -29,11 +29,11 @@ co2_l3 = 1200
 co2_l4 = 1600
 co2_l5 = 2000
 
-tvoc_l1 = 200
-tvoc_l2 = 400
-tvoc_l3 = 600
-tvoc_l4 = 800
-tvoc_l5 = 1000
+tvoc_l1 = 100
+tvoc_l2 = 200
+tvoc_l3 = 300
+tvoc_l4 = 400
+tvoc_l5 = 500
 
 t_l1 = 18
 t_l2 = 20
@@ -131,6 +131,7 @@ while True:
         print(" Altitude = %0.2f meters" % bme280.altitude)
         print(" eCO2 = %d ppm" % sgp30.eCO2)
         print(" TVOC = %d ppb" % sgp30.TVOC)
+        #print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC))
     led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
     time.sleep(time_leds_on)

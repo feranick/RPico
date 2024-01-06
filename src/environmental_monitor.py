@@ -15,13 +15,13 @@ import adafruit_sgp30
 # User variable definitions
 ############################
 serial = True
-time_leds_on = 2
+time_leds_on = 3
 co2eq_base = 0xFF22
 tvoc_base = 0XFF21
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
-sea_level_pressure = 1021.7
+sea_level_pressure = 1020.2
 
 co2_l1 = 400
 co2_l2 = 800
@@ -107,7 +107,7 @@ def led_blink(a, t):
         ld = led3
     if a == 5:
         ld = led5
-    while i < 4:
+    while i < 2:
         ld.value = True
         time.sleep(0.5)
         ld.value = False
@@ -134,15 +134,15 @@ while True:
     led(False)
     ledON(celsius, t_l1, t_l2, t_l3, t_l4, t_l5)
     time.sleep(time_leds_on)
-    led_blink(1,1)
+    led_blink(1,0.5)
     led(False)
     ledON(sgp30.eCO2, co2_l1, co2_l2, co2_l3, co2_l4, co2_l5)
     time.sleep(time_leds_on)
-    led_blink(3,1)
+    led_blink(3,0.5)
     led(False)
     ledON(sgp30.TVOC, tvoc_l1, tvoc_l2, tvoc_l3, tvoc_l4, tvoc_l5)
     time.sleep(time_leds_on)
-    led_blink(5,1)
+    led_blink(5,0.5)
     
     # Set baseline
     elapsed_sec += 1

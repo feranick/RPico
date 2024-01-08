@@ -55,6 +55,7 @@ t_l5 = 26
 ############################
 TEXT_SCALE = 2
 ROWS = 9
+ROTATION = 270
 
 # Release any resources currently in use for the displays
 displayio.release_displays()
@@ -67,7 +68,7 @@ tft_rst = board.GP9
 display_bus = FourWire(spi_tft, command=tft_dc,
     chip_select=tft_cs, reset=tft_rst)
 
-display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=90)
+display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=ROTATION)
 
 # Make the display context
 splash = displayio.Group()
@@ -124,9 +125,9 @@ while True:
         print(" Altitude = %0.2f meters" % bme280.altitude)
         print(" eCO2 = %d ppm" % sgp30.eCO2)
         print(" TVOC = %d ppb" % sgp30.TVOC)
-        print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2, 
+        print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2,
             sgp30.baseline_TVOC))
-        
+
     labels[0].text = "Temperature: %0.1f C" % celsius
     labels[2].text = "eCO2 = %d ppm" % sgp30.eCO2
     labels[3].text = "TVOC = %d ppb" % sgp30.TVOC
@@ -134,7 +135,7 @@ while True:
     labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
     labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
     # time.sleep(0.5)
-    
+
     # Set baseline
     elapsed_sec += 1
     if elapsed_sec > 10:

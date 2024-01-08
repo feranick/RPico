@@ -1,10 +1,10 @@
 
-#**********************************************
-#* Environmental Monitor TFT - Rasperry Pico
-#* v2024.01.08.1
-#* By: Nicola Ferralis <feranick@hotmail.com>
-#**********************************************
-import time
+# **********************************************
+# * Environmental Monitor TFT - Rasperry Pico
+# * v2024.01.08.1
+# * By: Nicola Ferralis <feranick@hotmail.com>
+# **********************************************
+# import time
 import board
 import busio
 import digitalio
@@ -19,14 +19,13 @@ import adafruit_sgp30
 # User variable definitions
 ############################
 serial = True
-time_leds_on = 3
+
 co2eq_base = 0x958a
 tvoc_base = 0x8ed3
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
-sea_level_pressure = 1020.2
-
+sea_level_pressure = 1025.8
 co2_l1 = 400
 co2_l2 = 800
 co2_l3 = 1200
@@ -48,8 +47,8 @@ t_l5 = 26
 ############################
 # TFT initialization
 ############################
-BORDER_WIDTH = 20
 TEXT_SCALE = 2
+ROWS = 9
 
 # Release any resources currently in use for the displays
 displayio.release_displays()
@@ -68,16 +67,17 @@ display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=90)
 splash = displayio.Group()
 display.root_group = splash
 
-# Draw a label
-label = label.Label(
-    terminalio.FONT,
-    text="Hello World!",
-    color=0xFFFF00,
-    scale=TEXT_SCALE,
-    anchor_point=(0.5, 0.5),
-    anchored_position=(display.width // 2, display.height // 2),
-)
-splash.append(label)
+labels = []
+for s in range(ROWS):
+    labels.append(label.Label(
+        terminalio.FONT,
+        text=" ",
+        color=0xFFFFFF,
+        scale=TEXT_SCALE,
+        anchor_point=(0, 0),
+        anchored_position=(0, 20*s),
+        ))
+    splash.append(labels[s])
 
 ############################
 # Sensor initialization
@@ -118,12 +118,20 @@ while True:
         print(" Altitude = %0.2f meters" % bme280.altitude)
         print(" eCO2 = %d ppm" % sgp30.eCO2)
         print(" TVOC = %d ppb" % sgp30.TVOC)
-        #print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC))
-    label.text = "Temperature:"+ str(celsius) + "C"
+        print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2, 
+            sgp30.baseline_TVOC))
+        
+    labels[0].text = "Temperature: %0.1f C" % celsius
+    labels[2].text = "eCO2 = %d ppm" % sgp30.eCO2
+    labels[3].text = "TVOC = %d ppb" % sgp30.TVOC
+    labels[5].text = "Humidity: %0.1f %%" % RH
+    labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
+    labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
+    # time.sleep(0.5)
     
     # Set baseline
     elapsed_sec += 1
-    if elapsed_sec > 300:
+    if elapsed_sec > 10:
         elapsed_sec = 0
         co2eq_base = sgp30.baseline_eCO2
         tvoc_base = sgp30.baseline_TVOC

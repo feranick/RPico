@@ -138,7 +138,7 @@ while True:
 
     # Set baseline
     elapsed_sec += 1
-    if elapsed_sec > 10:
+    if elapsed_sec > 300:
         elapsed_sec = 0
         co2eq_base = sgp30.baseline_eCO2
         tvoc_base = sgp30.baseline_TVOC

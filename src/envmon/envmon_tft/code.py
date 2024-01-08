@@ -15,10 +15,16 @@ from adafruit_st7789 import ST7789
 from adafruit_bme280 import basic as adafruit_bme280
 import adafruit_sgp30
 
+# Compatibility with CircuitPython 9.x.x or 8.x.x
+try:
+    from fourwire import FourWire
+except ImportError:
+    from displayio import FourWire
+
 ############################
 # User variable definitions
 ############################
-serial = True
+serial = False
 
 co2eq_base = 0x958a
 tvoc_base = 0x8ed3
@@ -58,7 +64,7 @@ tft_cs = board.GP7
 tft_dc = board.GP8
 tft_rst = board.GP9
 
-display_bus = displayio.FourWire(spi_tft, command=tft_dc,
+display_bus = FourWire(spi_tft, command=tft_dc,
     chip_select=tft_cs, reset=tft_rst)
 
 display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=90)

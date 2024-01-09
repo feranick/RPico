@@ -31,7 +31,7 @@ tvoc_base = 0x8ed3
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
-sea_level_pressure = 1029.3
+sea_level_pressure = 1029.4
 
 ############################
 # TFT initialization
@@ -90,7 +90,7 @@ rect2_sprite = displayio.TileGrid(
 splash.append(rect2_sprite)
 
 ############################
-# Labels 
+# Labels
 ############################
 labels = []
 for s in range(ROWS):
@@ -127,7 +127,7 @@ def AQI_CO2(c):
         i = 6
         rect1_palette[0] = 0x7e0023
     return i
-        
+
 def AQI_TVOC(c):
     if c <= 50:
         i = 1

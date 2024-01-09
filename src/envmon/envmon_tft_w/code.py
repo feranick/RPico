@@ -46,22 +46,23 @@ headers = {'Accept': 'application/geo+json',
 ############################
 # User variable definitions
 ############################
-wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), os.getenv('CIRCUITPY_WIFI_PASSWORD'))
+wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), 
+    os.getenv('CIRCUITPY_WIFI_PASSWORD'))
 pool = socketpool.SocketPool(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
 def get_nws_data():
     try:
-        response = requests.get(url, headers=Conf().headers).json())
+        response = requests.get(url, headers=headers).json()
         print("Text Response: ", response.text)
         response.close()
         data = [wdata['properties']['temperature']['value'],
             wdata['properties']['relativeHumidity']['value'],
-            float(wdata['properties']['seaLevelPressure']['value'])/100))
-                time.sleep(20)
+            float(wdata['properties']['seaLevelPressure']['value'])/100]
+        time.sleep(20)
         return response
     except:
-        return [0,0,0]
+        return [0,0,1029]
     #except Exception as e:
     #    print("Error:\n", str(e))
     #    print("Resetting microcontroller in 10 seconds")
@@ -210,7 +211,7 @@ if serial:
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 # sea_level_pressure = 1029.3
-bme280.sea_level_pressure = float(get_nws_data()[3])/100
+bme280.sea_level_pressure = float(get_nws_data()[2])/100
 elapsed_sec = 0
 
 ############################
@@ -254,4 +255,4 @@ while True:
         sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
         if serial:
             print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
-        bme280.sea_level_pressure = float(get_nws_data()[3])/100
+        bme280.sea_level_pressure = float(get_nws_data()[2])/100

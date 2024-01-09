@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.09.1
+# * v2024.01.09.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -229,8 +229,8 @@ while True:
     RH = bme280.relative_humidity
     sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
     if serial:
-        print("\n Temperature: %0.1f C" % celsius)
-        print(" Humidity: %0.1f %%" % RH)
+        print("\n Temperature: %0.1fC (%0.1fC)" % (celsius, float(nws[0])))
+        print(" Humidity: %0.1f%% (%0.1f%%)" % (RH, float(nws[1])))
         print(" Pressure: %0.1f hPa" % bme280.pressure)
         print(" Altitude = %0.2f meters" % bme280.altitude)
         print(" eCO2 = %d ppm" % sgp30.eCO2)

@@ -24,14 +24,14 @@ except ImportError:
 ############################
 # User variable definitions
 ############################
-serial = False
+serial = True
 
 co2eq_base = 0x958a
 tvoc_base = 0x8ed3
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
-sea_level_pressure = 1025.8
+sea_level_pressure = 1029.3
 co2_l1 = 400
 co2_l2 = 800
 co2_l3 = 1200
@@ -89,6 +89,39 @@ for s in range(ROWS):
 ############################
 # Sensor initialization
 ############################
+def AQI_CO2(c):
+    if c <= 400:
+        i = 1
+    if c > 400 and c <= 1000:
+        i = 2
+    if c > 1000 and c <= 1500:
+        i = 3
+    if c > 1500 and c <= 2000:
+        i = 4
+    if c > 2000 and c <= 5000:
+        i = 5
+    if c > 5000:
+        i = 6
+    return i
+        
+def AQI_TVOC(c):
+    if c <= 50:
+        i = 1
+    if c > 50 and c <= 100:
+        i = 2
+    if c > 100 and c <= 150:
+        i = 3
+    if c > 150 and c <= 200:
+        i = 4
+    if c > 200 and c <= 300:
+        i = 5
+    if c > 300 and c <= 500:
+        i = 6
+    return i
+
+############################
+# Sensor initialization
+############################
 # Create sensor object, using the board's default I2C bus.
 # i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
 # bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
@@ -125,15 +158,19 @@ while True:
         print(" Altitude = %0.2f meters" % bme280.altitude)
         print(" eCO2 = %d ppm" % sgp30.eCO2)
         print(" TVOC = %d ppb" % sgp30.TVOC)
+        print(" AQI-CO2: %d  AQI-TVOC: %d"  % (AQI_CO2(sgp30.eCO2), AQI_TVOC(sgp30.TVOC)))
         print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2,
             sgp30.baseline_TVOC))
 
     labels[0].text = "Temperature: %0.1f C" % celsius
-    labels[2].text = "eCO2 = %d ppm" % sgp30.eCO2
-    labels[3].text = "TVOC = %d ppb" % sgp30.TVOC
-    labels[5].text = "Humidity: %0.1f %%" % RH
-    labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
-    labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
+    labels[1].text = "eCO2 = %d ppm" % sgp30.eCO2
+    labels[2].text = "TVOC = %d ppb" % sgp30.TVOC
+    labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (AQI_CO2(sgp30.eCO2), AQI_TVOC(sgp30.TVOC))
+    labels[4].text = "Humidity: %0.1f %%" % RH
+    labels[5].text = "Pressure: %0.1f hPa" % bme280.pressure
+    labels[6].text = "Altitude = %0.2f meters" % bme280.altitude
+    labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2,
+            sgp30.baseline_TVOC)
     # time.sleep(0.5)
 
     # Set baseline

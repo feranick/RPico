@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.08.3
+# * v2024.01.09.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -38,37 +38,19 @@ serial = False
 co2eq_base = 0x958a
 tvoc_base = 0x8ed3
 
-url = "https://api.weather.gov/"
+station = "kbos"
+
+
+url = "https://api.weather.gov/stations/"+station+"/observations/latest/"
 user_agent = "(feranick, feranick@hotmail.com)"
 headers = {'Accept': 'application/geo+json',
             'User-Agent' : user_agent}
             
-############################
-# User variable definitions
-############################
 wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), 
     os.getenv('CIRCUITPY_WIFI_PASSWORD'))
 pool = socketpool.SocketPool(wifi.radio)
 requests = adafruit_requests.Session(pool, ssl.create_default_context())
-
-def get_nws_data():
-    try:
-        response = requests.get(url, headers=headers).json()
-        print("Text Response: ", response.text)
-        response.close()
-        data = [wdata['properties']['temperature']['value'],
-            wdata['properties']['relativeHumidity']['value'],
-            float(wdata['properties']['seaLevelPressure']['value'])/100]
-        time.sleep(20)
-        return response
-    except:
-        return [0,0,1029]
-    #except Exception as e:
-    #    print("Error:\n", str(e))
-    #    print("Resetting microcontroller in 10 seconds")
-    #    time.sleep(10)
-    #    microcontroller.reset()
-
+            
 ############################
 # TFT initialization
 ############################
@@ -141,6 +123,26 @@ for s in range(ROWS):
     splash.append(labels[s])
 
 ############################
+# Retrieve NVS data
+############################
+def get_nws_data():
+    try:
+        r = requests.get(url, headers=headers)
+        data = [r.json()['properties']['temperature']['value'],
+            r.json()['properties']['relativeHumidity']['value'],
+            float(r.json()['properties']['seaLevelPressure']['value'])/100]
+        time.sleep(5)
+        r.close()
+        return data
+    except:
+        return [0,0,1029]
+    #except Exception as e:
+    #    print("Error:\n", str(e))
+    #    print("Resetting microcontroller in 10 seconds")
+    #    time.sleep(10)
+    #    microcontroller.reset()
+
+############################
 # Sensor initialization
 ############################
 def AQI_CO2(c):
@@ -188,8 +190,6 @@ def AQI_TVOC(c):
 ############################
 # Sensor initialization
 ############################
-
-
 # Create sensor object, using the board's default I2C bus.
 # i2c = busio.I2C(board.GP1, board.GP0)  # SCL, SDA
 # bme280 = adafruit_bme280.Adafruit_BME280_I2C(i2c)
@@ -211,7 +211,9 @@ if serial:
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 # sea_level_pressure = 1029.3
-bme280.sea_level_pressure = float(get_nws_data()[2])/100
+
+nws = get_nws_data()
+bme280.sea_level_pressure = nws[2]
 elapsed_sec = 0
 
 ############################
@@ -219,8 +221,6 @@ elapsed_sec = 0
 ############################
 while True:
     # sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
-    
-    nws = get_nws_data()
     
     celsius = bme280.temperature
     RH = bme280.relative_humidity
@@ -236,11 +236,11 @@ while True:
         print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sgp30.baseline_eCO2,
             sgp30.baseline_TVOC))
 
-    labels[0].text = "Temp: %0.1f C (%0.1f C)" % (celsius, float(nws[0]))
+    labels[0].text = "Temp: %0.1fC (%0.1fC)" % (celsius, float(nws[0]))
     labels[1].text = "eCO2 = %d ppm" % sgp30.eCO2
     labels[2].text = "TVOC = %d ppb" % sgp30.TVOC
     labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (AQI_CO2(sgp30.eCO2), AQI_TVOC(sgp30.TVOC))
-    labels[5].text = "RH: %0.1f %% (%0.1f %%)" % (RH, float(nws[1]))
+    labels[5].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(nws[1]))
     labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
     labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
     # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
@@ -249,10 +249,11 @@ while True:
     # Set baseline
     elapsed_sec += 1
     if elapsed_sec > 300:
+        nws = get_nws_data()
         elapsed_sec = 0
         co2eq_base = sgp30.baseline_eCO2
         tvoc_base = sgp30.baseline_TVOC
         sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
         if serial:
             print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
-        bme280.sea_level_pressure = float(get_nws_data()[2])/100
+        bme280.sea_level_pressure = float(nws[2])/100

@@ -248,7 +248,7 @@ while True:
     labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
     labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
     # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
-    time.sleep(0.2)
+    #time.sleep(0.2)
 
     # Set baseline
     elapsed_sec += 1

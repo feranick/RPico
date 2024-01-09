@@ -212,9 +212,12 @@ if serial:
 # https://w1.weather.gov/data/obhistory/KBOS.html
 # sea_level_pressure = 1029.3
 
+labels[2].text = "Retrieving NWS data..."
+
 nws = get_nws_data()
 bme280.sea_level_pressure = nws[2]
 elapsed_sec = 0
+labels[2].text = "                      "
 
 ############################
 # Main

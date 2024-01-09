@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico
-# * v2024.01.08.2
+# * v2024.01.09.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 # import time
@@ -24,10 +24,9 @@ except ImportError:
 ############################
 # User variable definitions
 ############################
-serial = False
-
-co2eq_base = 0x958a
-tvoc_base = 0x8ed3
+co2eq_base = os.getenv("co2eq_base")
+tvoc_base = os.getenv("tvoc_base")
+serial = bool(os.getenv("serial"))
 
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
@@ -200,7 +199,7 @@ while True:
     labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
     labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
     # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
-    # time.sleep(0.5)
+    time.sleep(0.5)
 
     # Set baseline
     elapsed_sec += 1

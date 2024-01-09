@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.09.2
+# * v2024.01.09.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -33,12 +33,10 @@ except ImportError:
 ############################
 # User variable definitions
 ############################
-serial = False
-
-co2eq_base = 0x958a
-tvoc_base = 0x8ed3
-
-station = "kbos"
+station = os.getenv("station")
+co2eq_base = os.getenv("co2eq_base")
+tvoc_base = os.getenv("tvoc_base")
+serial = bool(os.getenv("serial"))
 
 url = "https://api.weather.gov/stations/"+station+"/observations/latest/"
 user_agent = "(feranick, feranick@hotmail.com)"

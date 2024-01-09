@@ -40,16 +40,17 @@ tvoc_base = 0x8ed3
 
 station = "kbos"
 
-
 url = "https://api.weather.gov/stations/"+station+"/observations/latest/"
 user_agent = "(feranick, feranick@hotmail.com)"
 headers = {'Accept': 'application/geo+json',
             'User-Agent' : user_agent}
-            
-wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), 
+try:            
+    wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), 
     os.getenv('CIRCUITPY_WIFI_PASSWORD'))
-pool = socketpool.SocketPool(wifi.radio)
-requests = adafruit_requests.Session(pool, ssl.create_default_context())
+    pool = socketpool.SocketPool(wifi.radio)
+    requests = adafruit_requests.Session(pool, ssl.create_default_context())
+except:
+    pass
             
 ############################
 # TFT initialization
@@ -247,7 +248,7 @@ while True:
     labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
     labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
     # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
-    # time.sleep(0.5)
+    time.sleep(0.2)
 
     # Set baseline
     elapsed_sec += 1

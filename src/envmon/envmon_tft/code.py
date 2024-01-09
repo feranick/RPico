@@ -213,11 +213,10 @@ while True:
     labels[1].text = "eCO2 = %d ppm" % sgp30.eCO2
     labels[2].text = "TVOC = %d ppb" % sgp30.TVOC
     labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (AQI_CO2(sgp30.eCO2), AQI_TVOC(sgp30.TVOC))
-    labels[4].text = "Humidity: %0.1f %%" % RH
-    labels[5].text = "Pressure: %0.1f hPa" % bme280.pressure
-    labels[6].text = "Altitude = %0.2f meters" % bme280.altitude
-    labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2,
-            sgp30.baseline_TVOC)
+    labels[5].text = "Humidity: %0.1f %%" % RH
+    labels[6].text = "Pressure: %0.1f hPa" % bme280.pressure
+    labels[7].text = "Altitude = %0.2f meters" % bme280.altitude
+    # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sgp30.baseline_eCO2, sgp30.baseline_TVOC)
     # time.sleep(0.5)
 
     # Set baseline

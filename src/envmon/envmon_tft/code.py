@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico
-# * v2024.01.08.1
+# * v2024.01.08.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 # import time
@@ -24,7 +24,7 @@ except ImportError:
 ############################
 # User variable definitions
 ############################
-serial = True
+serial = False
 
 co2eq_base = 0x958a
 tvoc_base = 0x8ed3
@@ -74,6 +74,41 @@ display = ST7789(display_bus, width=320, height=170, colstart=35, rotation=ROTAT
 splash = displayio.Group()
 display.root_group = splash
 
+############################
+# Color and AQI color
+############################
+'''
+color_bitmap = displayio.Bitmap(display.width, display.height, 1)
+color_palette = displayio.Palette(1)
+color_palette[0] = 0x00FF00  # Bright Green
+bg_sprite = displayio.TileGrid(color_bitmap, pixel_shader=color_palette, x=0, y=0)
+splash.append(bg_sprite)
+'''
+# Draw a smaller inner rectangle
+rect1 = displayio.Bitmap(
+    40, 85, 1
+)
+rect1_palette = displayio.Palette(1)
+rect1_palette[0] = 0x000000  # Purple
+rect1_sprite = displayio.TileGrid(
+    rect1, pixel_shader=rect1_palette, x=280, y=0
+)
+splash.append(rect1_sprite)
+
+# Draw a smaller inner rectangle
+rect2 = displayio.Bitmap(
+    40, 85, 1
+)
+rect2_palette = displayio.Palette(1)
+rect2_palette[0] = 0x000000  # Purple
+rect2_sprite = displayio.TileGrid(
+    rect2, pixel_shader=rect2_palette, x=280, y=85
+)
+splash.append(rect2_sprite)
+
+############################
+# Labels 
+############################
 labels = []
 for s in range(ROWS):
     labels.append(label.Label(
@@ -92,31 +127,43 @@ for s in range(ROWS):
 def AQI_CO2(c):
     if c <= 400:
         i = 1
+        rect1_palette[0] = 0x00e408
     if c > 400 and c <= 1000:
         i = 2
+        rect1_palette[0] = 0xffff00
     if c > 1000 and c <= 1500:
         i = 3
+        rect1_palette[0] = 0xff8000
     if c > 1500 and c <= 2000:
         i = 4
+        rect1_palette[0] = 0xff0000
     if c > 2000 and c <= 5000:
         i = 5
+        rect1_palette[0] = 0x903f97
     if c > 5000:
         i = 6
+        rect1_palette[0] = 0x7e0023
     return i
         
 def AQI_TVOC(c):
     if c <= 50:
         i = 1
+        rect2_palette[0] = 0x00e408
     if c > 50 and c <= 100:
         i = 2
+        rect2_palette[0] = 0xffff00
     if c > 100 and c <= 150:
         i = 3
+        rect2_palette[0] = 0xff8000
     if c > 150 and c <= 200:
         i = 4
+        rect2_palette[0] = 0xff0000
     if c > 200 and c <= 300:
         i = 5
+        rect2_palette[0] = 0x903f97
     if c > 300 and c <= 500:
         i = 6
+        rect2_palette[0] = 0x7e0023
     return i
 
 ############################

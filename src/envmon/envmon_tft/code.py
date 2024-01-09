@@ -32,23 +32,6 @@ tvoc_base = 0x8ed3
 # change this to match the location's pressure (hPa) at sea level
 # https://w1.weather.gov/data/obhistory/KBOS.html
 sea_level_pressure = 1029.3
-co2_l1 = 400
-co2_l2 = 800
-co2_l3 = 1200
-co2_l4 = 1600
-co2_l5 = 2000
-
-tvoc_l1 = 100
-tvoc_l2 = 200
-tvoc_l3 = 300
-tvoc_l4 = 400
-tvoc_l5 = 500
-
-t_l1 = 18
-t_l2 = 20
-t_l3 = 22
-t_l4 = 24
-t_l5 = 26
 
 ############################
 # TFT initialization

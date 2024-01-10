@@ -143,7 +143,7 @@ def AQI_TVOC(c):
     if c > 200 and c <= 300:
         i = 5
         rect2_palette[0] = 0x903f97
-    if c > 300 and c <= 500:
+    if c > 300:
         i = 6
         rect2_palette[0] = 0x7e0023
     return i

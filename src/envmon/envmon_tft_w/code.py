@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.09.3
+# * v2024.01.09.4
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -33,23 +33,29 @@ except ImportError:
 ############################
 # User variable definitions
 ############################
-station = os.getenv("station")
-co2eq_base = os.getenv("co2eq_base")
-tvoc_base = os.getenv("tvoc_base")
-serial = bool(os.getenv("serial"))
+try:
+    station = os.getenv("station")
+    co2eq_base = os.getenv("co2eq_base")
+    tvoc_base = os.getenv("tvoc_base")
+    serial = bool(os.getenv("serial"))
+except:
+    station = "kbos"
+    co2eq_base = 0x958a
+    tvoc_base = 0x8ed3
+    serial = True
 
 url = "https://api.weather.gov/stations/"+station+"/observations/latest/"
 user_agent = "(feranick, feranick@hotmail.com)"
 headers = {'Accept': 'application/geo+json',
             'User-Agent' : user_agent}
-try:            
-    wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), 
+try:
+    wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
     os.getenv('CIRCUITPY_WIFI_PASSWORD'))
     pool = socketpool.SocketPool(wifi.radio)
     requests = adafruit_requests.Session(pool, ssl.create_default_context())
 except:
     pass
-            
+
 ############################
 # TFT initialization
 ############################
@@ -107,7 +113,7 @@ rect2_sprite = displayio.TileGrid(
 splash.append(rect2_sprite)
 
 ############################
-# Labels 
+# Labels
 ############################
 labels = []
 for s in range(ROWS):
@@ -120,21 +126,25 @@ for s in range(ROWS):
         anchored_position=(0, 20*s),
         ))
     splash.append(labels[s])
-
+    
 ############################
 # Retrieve NVS data
 ############################
 def get_nws_data():
     try:
         r = requests.get(url, headers=headers)
+        slp = r.json()['properties']['seaLevelPressure']['value']
+        if slp is None:
+            slp = 1029
+        else:
+            slp = float(slp)/100
         data = [r.json()['properties']['temperature']['value'],
-            r.json()['properties']['relativeHumidity']['value'],
-            float(r.json()['properties']['seaLevelPressure']['value'])/100]
+            r.json()['properties']['relativeHumidity']['value'], slp]        
         time.sleep(5)
         r.close()
         return data
     except:
-        return [0,0,1029]
+        return [0,0,1015]
     #except Exception as e:
     #    print("Error:\n", str(e))
     #    print("Resetting microcontroller in 10 seconds")
@@ -164,7 +174,7 @@ def AQI_CO2(c):
         i = 6
         rect1_palette[0] = 0x7e0023
     return i
-        
+
 def AQI_TVOC(c):
     if c <= 50:
         i = 1
@@ -174,14 +184,14 @@ def AQI_TVOC(c):
         rect2_palette[0] = 0xffff00
     if c > 100 and c <= 150:
         i = 3
-        rect2_palette[0] = 0xff8000
+        rect2_palette[0] = 0xff8000    
     if c > 150 and c <= 200:
         i = 4
         rect2_palette[0] = 0xff0000
     if c > 200 and c <= 300:
         i = 5
         rect2_palette[0] = 0x903f97
-    if c > 300 and c <= 500:
+    if c > 300:
         i = 6
         rect2_palette[0] = 0x7e0023
     return i
@@ -216,6 +226,7 @@ labels[3].text = "For station: "+station
 
 nws = get_nws_data()
 bme280.sea_level_pressure = nws[2]
+
 elapsed_sec = 0
 labels[2].text = "                      "
 labels[3].text = "                      "
@@ -225,7 +236,7 @@ labels[3].text = "                      "
 ############################
 while True:
     # sgp30.set_iaq_relative_humidity(celsius=22.1, relative_humidity=44)
-    
+
     celsius = bme280.temperature
     RH = bme280.relative_humidity
     sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)

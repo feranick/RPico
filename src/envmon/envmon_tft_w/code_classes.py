@@ -179,7 +179,7 @@ class Sensors:
         self.bme280.sea_level_pressure = self.nws[2]
         disp.labels[2].text = "                      "
         disp.labels[3].text = "                      "
-        
+
     ############################
     # Sensor initialization
     ############################
@@ -234,7 +234,7 @@ def main():
     conf = Conf()
     disp = Display()
     sens = Sensors(conf, disp)
-    
+
     elapsed_sec = 0
     while True:
 
@@ -265,7 +265,7 @@ def main():
         # Set baseline
         elapsed_sec += 1
         if elapsed_sec > 300:
-            sens.nws = sens.get_nws_data()
+            sens.nws = conf.get_nws_data()
             elapsed_sec = 0
             conf.co2eq_base = sens.sgp30.baseline_eCO2
             conf.tvoc_base = sens.sgp30.baseline_TVOC

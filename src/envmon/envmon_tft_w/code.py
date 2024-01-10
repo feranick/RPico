@@ -126,7 +126,7 @@ for s in range(ROWS):
         anchored_position=(0, 20*s),
         ))
     splash.append(labels[s])
-    
+
 ############################
 # Retrieve NVS data
 ############################
@@ -139,7 +139,7 @@ def get_nws_data():
         else:
             slp = float(slp)/100
         data = [r.json()['properties']['temperature']['value'],
-            r.json()['properties']['relativeHumidity']['value'], slp]        
+            r.json()['properties']['relativeHumidity']['value'], slp]
         time.sleep(5)
         r.close()
         return data
@@ -184,7 +184,7 @@ def AQI_TVOC(c):
         rect2_palette[0] = 0xffff00
     if c > 100 and c <= 150:
         i = 3
-        rect2_palette[0] = 0xff8000    
+        rect2_palette[0] = 0xff8000
     if c > 150 and c <= 200:
         i = 4
         rect2_palette[0] = 0xff0000
@@ -271,4 +271,4 @@ while True:
         sgp30.set_iaq_baseline(co2eq_base, tvoc_base)
         if serial:
             print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (co2eq_base, tvoc_base))
-        bme280.sea_level_pressure = float(nws[2])/100
+        bme280.sea_level_pressure = nws[2]

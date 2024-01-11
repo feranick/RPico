@@ -2,7 +2,7 @@ import wifi
 import socketpool
 import time
 
-wifi.radio.connect("BudSpencer", "Pennstate123")
+wifi.radio.connect("SSID", "Password")
 pool = socketpool.SocketPool(wifi.radio)
 ip = str(wifi.radio.ipv4_address)
 sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)

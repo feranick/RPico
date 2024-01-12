@@ -1,35 +1,51 @@
+# **********************************************
+# * Garage Opener - Rasperry Pico W
+# * v2024.01.12.1
+# * By: Nicola Ferralis <feranick@hotmail.com>
+# **********************************************
+
+import os
 import board
 import digitalio
 import wifi
 import socketpool
 import time
 
-wifi.radio.connect("BudSpencer", "Pennstate123")
-pool = socketpool.SocketPool(wifi.radio)
-ip = str(wifi.radio.ipv4_address)
-sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
-sock.settimeout(None)
-sock.bind((ip, 80))
-sock.listen(2)
-print("Listening")
+############################
+# User variable definitions
+############################
+class Conf:
+    def __init__(self):
+        try:
+            wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
+            os.getenv('CIRCUITPY_WIFI_PASSWORD'))
+            pool = socketpool.SocketPool(wifi.radio)
+            self.ip = str(wifi.radio.ipv4_address)
+            self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
+            self.sock.settimeout(None)
+            self.sock.bind((self.ip, 80))
+            self.sock.listen(2)
+            print("\n Device IP: "+self.ip+"\n Listening")
+        except:
+            pass
 
-btn = digitalio.DigitalInOut(board.GP26)
-btn.direction = digitalio.Direction.OUTPUT
-btn.value = True
+        self.btn = digitalio.DigitalInOut(board.GP26)
+        self.btn.direction = digitalio.Direction.OUTPUT
+        self.btn.value = True
 
-def webpage(ip, state):
-  #Template HTML
-  html = f"""
-      <!DOCTYPE html>
-      <html>
-      <head>
-      <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+    def webpage(self, state):
+        #Template HTML
+        html = f"""
+        <!DOCTYPE html>
+        <html>
+        <head>
+        <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
         <meta name="apple-mobile-web-app-capable" content="yes" />
         <meta names="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-      </head>
-      <body>
-      <style type="text/css">
-      #Submit {{
+        </head>
+        <body>
+        <style type="text/css">
+        #Submit {{
         font-size: 20px;
         font-weight: bold;
         margin: 200px;
@@ -42,7 +58,7 @@ def webpage(ip, state):
         position:center;
         right:0px;
         padding: 0px;}}
-      body{{
+        body{{
         margin: 5px;
         font-family: Helvetica;
         text-align: center;
@@ -57,38 +73,47 @@ def webpage(ip, state):
         .show{{display: block;}}
         .done{{opacity:0.2;}}
         .notdone{{opacity:1;}}
-      </style>
-      <form action="./run?">
-      <input type="submit" id="Submit" value="Run" />
-      </form>
-      <p>Device IP: {ip}</p>
-      <p>Control is {state}</p>
-      </body>
-      </html>
-      """
-  return str(html)
+        </style>
+        <form action="./run?">
+        <input type="submit" id="Submit" value="Run" />
+        </form>
+        <p>Device IP: {self.ip}</p>
+        <p>Control is {state}</p>
+        </body>
+        </html>
+        """
+        return str(html)
   
-def runControl(btn):
-    btn.value = False
-    time.sleep(1)
-    btn.value = True
-    time.sleep(1)
+    def runControl(self):
+        self.btn.value = False
+        time.sleep(1)
+        self.btn.value = True
+        time.sleep(1)
 
-buf = bytearray(1024)
-state = "CLOSE"
-while True:
-    conn, addr = sock.accept()
-    conn.settimeout(None)
+############################
+# Main
+############################
+def main():
+    conf = Conf()
 
-    size = conn.recv_into(buf, 1024)
+    buf = bytearray(1024)
+    state = "CLOSE"
     
-    try:
-        request = str(buf[:50]).split()[1]
-    except:
-        request = ""
-    if request == "/run?":
-        runControl(btn)
-        state = "RUN"
-    html = webpage(ip,state)
-    conn.send(html)
-    conn.close()
+    while True:
+        conn, addr = conf.sock.accept()
+        conn.settimeout(None)
+
+        size = conn.recv_into(buf, 1024)
+    
+        try:
+            request = str(buf[:50]).split()[1]
+        except:
+            request = ""
+        if request == "/run?":
+            conf.runControl()
+            state = "RUN"
+        html = conf.webpage(state)
+        conn.send(html)
+        conn.close()
+
+main()

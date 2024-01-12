@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.11.3
+# * v2024.01.11.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -40,11 +40,13 @@ class Conf:
             self.co2eq_base = os.getenv("co2eq_base")
             self.tvoc_base = os.getenv("tvoc_base")
             self.serial = bool(os.getenv("serial"))
+            self.web = bool(os.getenv("web"))
         except:
             self.station = "kbos"
             self.co2eq_base = 0x958a
             self.tvoc_base = 0x8ed3
             self.serial = True
+            self.web = False
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
         self.user_agent = "(feranick, feranick@hotmail.com)"
@@ -53,11 +55,29 @@ class Conf:
         try:
             wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
             os.getenv('CIRCUITPY_WIFI_PASSWORD'))
-            pool = socketpool.SocketPool(wifi.radio)
-            self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
+            self.pool = socketpool.SocketPool(wifi.radio)
+            self.requests = adafruit_requests.Session(self.pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
         except:
             pass
+    
+    def open_socket(self):
+        self.sock = self.pool.socket(self.pool.AF_INET, self.pool.SOCK_STREAM)
+        self.sock.settimeout(None)
+        self.sock.bind((self.ip, 80))
+        self.sock.listen(2)
+        print("Listening")
+        
+    def webpage(self,state):
+        #Template HTML
+        html = f"""
+            <!DOCTYPE html>
+            <html>
+            <p>{state}</p>
+            </body>
+            </html>
+            """
+        return str(html)
 
     ############################
     # Retrieve NVS data
@@ -237,13 +257,18 @@ def main():
     conf = Conf()
     disp = Display()
     sens = Sensors(conf, disp)
-
+    
+    if conf.web:
+        conf.open_socket()
+        buf = bytearray(1024)
+    
     elapsed_sec = 0
+    
     while True:
-
         celsius = sens.bme280.temperature
         RH = sens.bme280.relative_humidity
         sens.sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
+        
         if conf.serial:
             print("\n Temperature: %0.1fC (%0.1fC)" % (celsius, float(sens.nws[0])))
             print(" Humidity: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1])))
@@ -264,6 +289,12 @@ def main():
         disp.labels[7].text = "Altitude = %0.2f meters" % sens.bme280.altitude
         # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
         #time.sleep(0.2)
+        
+        if conf.web:
+            conn, addr = conf.sock.accept()
+            conn.settimeout(None)
+            conn.send(conf.webpage("TEST"))
+            conn.close()
 
         # Set baseline
         elapsed_sec += 1

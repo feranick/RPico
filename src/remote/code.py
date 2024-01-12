@@ -13,11 +13,11 @@ sock.bind((ip, 80))
 sock.listen(2)
 print("Listening")
 
-btn = digitalio.DigitalInOut(board.GP5)
+btn = digitalio.DigitalInOut(board.GP26)
 btn.direction = digitalio.Direction.OUTPUT
 btn.value = True
 
-def webpage(state):
+def webpage(ip, state):
   #Template HTML
   html = f"""
       <!DOCTYPE html>
@@ -61,6 +61,7 @@ def webpage(state):
       <form action="./run?">
       <input type="submit" id="Submit" value="Run" />
       </form>
+      <p>Device IP: {ip}</p>
       <p>Control is {state}</p>
       </body>
       </html>
@@ -88,6 +89,6 @@ while True:
     if request == "/run?":
         runControl(btn)
         state = "RUN"
-    html = webpage(state)
+    html = webpage(ip,state)
     conn.send(html)
     conn.close()

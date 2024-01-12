@@ -4,7 +4,7 @@ import wifi
 import socketpool
 import time
 
-wifi.radio.connect("SSID", "Password")
+wifi.radio.connect("BudSpencer", "Pennstate123")
 pool = socketpool.SocketPool(wifi.radio)
 ip = str(wifi.radio.ipv4_address)
 sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
@@ -34,7 +34,7 @@ def webpage(state):
         font-weight: bold;
         margin: 200px;
         margin-top: 10px;
-        height: 2500px;
+        height: 250px;
         width: 250px;
         position: center;
         text-align: center;
@@ -45,6 +45,7 @@ def webpage(state):
       body{{
         margin: 5px;
         font-family: Helvetica;
+        text-align: center;
         min-height: 30px;
         width: 100%;
         background-position: center top;

@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.10.1
+# * v2024.01.11.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -55,6 +55,7 @@ class Conf:
             os.getenv('CIRCUITPY_WIFI_PASSWORD'))
             pool = socketpool.SocketPool(wifi.radio)
             self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
+            self.ip = str(wifi.radio.ipv4_address)
         except:
             pass
 
@@ -174,11 +175,13 @@ class Sensors:
 
         disp.labels[2].text = "Retrieving NWS data"
         disp.labels[3].text = "For station: "+conf.station
+        disp.labels[5].text = "IP: "+self.conf.ip
 
         self.nws = conf.get_nws_data()
         self.bme280.sea_level_pressure = self.nws[2]
         disp.labels[2].text = "                      "
         disp.labels[3].text = "                      "
+        disp.labels[5].text = "                      "
 
     ############################
     # Sensor initialization

@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.13.2
+# * v2024.01.13.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -11,8 +11,8 @@ import wifi
 import socketpool
 import time
 import microcontroller
+from adafruit_datetime import datetime
 import adafruit_hcsr04
-import adafruit_ntp
 
 ############################
 # User variable definitions
@@ -38,7 +38,6 @@ class Server:
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
-            self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
             print("\n Device IP: "+self.ip+"\n Listening")
         except:
             pass
@@ -104,18 +103,18 @@ class Server:
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" />
         </form>
-        <p>{self.getDateTime()} C</p>
+        <p>{self.getDateTime()}</p>
         <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>
         </body>
         </html>
         """
         return str(html)
-    
+
     def getDateTime(self):
-        dt = self.ntp.datetime
-        print(dt)
-        return dt
+        now = datetime.now()
+        print(now)
+        return now
 
 ############################
 # User variable definitions
@@ -125,7 +124,7 @@ class Control:
         self.btn = digitalio.DigitalInOut(board.GP26)
         self.btn.direction = digitalio.Direction.OUTPUT
         self.btn.value = True
-        
+
     def runControl(self):
         self.btn.value = False
         time.sleep(1)
@@ -139,7 +138,7 @@ class Sonar:
     def __init__(self, conf):
         self.trigDist = conf.triggerDistance
         self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP16, echo_pin=board.GP15)
-    
+
     def checkStatus(self):
         nt = 0
         while nt < 5:
@@ -157,7 +156,7 @@ class Sonar:
                 nt+=1
                 time.sleep(1)
         return "N/A"
-                
+
 
 ############################
 # Main
@@ -182,21 +181,18 @@ def main():
             request = ""
         if request == "/run?":
             control.runControl()
-            state = sonar.checkStatus()
-        elif request == "/status?":
-            state = sonar.checkStatus()
-        else:
-            pass
+            
+        state = sonar.checkStatus()
         html = server.webpage(state)
         nt = 0
-        while nt < 5: 
+        while nt < 5:
             try:
                 conn.send(html)
                 time.sleep(1)
                 break
             except ConnectionError:
                 nt+=1
-        
+
         conn.close()
 
 main()

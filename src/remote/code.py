@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.13.1
+# * v2024.01.13.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -12,6 +12,7 @@ import socketpool
 import time
 import microcontroller
 import adafruit_hcsr04
+import adafruit_ntp
 
 ############################
 # User variable definitions
@@ -19,7 +20,7 @@ import adafruit_hcsr04
 class Conf:
     def __init__(self):
         try:
-            self.triggerDistance = os.getenv("trigDistance")
+            self.triggerDistance = float(os.getenv("trigDistance"))
         except:
             self.triggerDistance = 20
 
@@ -37,6 +38,7 @@ class Server:
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
+            self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
             print("\n Device IP: "+self.ip+"\n Listening")
         except:
             pass
@@ -56,9 +58,22 @@ class Server:
         #Submit {{
         font-size: 20px;
         font-weight: bold;
-        margin: 50px;
+        margin: 70px;
         margin-top: 10px;
-        height: 250px;
+        height: 200px;
+        width: 250px;
+        position: center;
+        text-align: center;
+        border-width: 4px 4px;
+        position:center;
+        right:0px;
+        padding: 0px;}}
+        #Status {{
+        font-size: 20px;
+        font-weight: bold;
+        margin: 70px;
+        margin-top: 10px;
+        height: 100px;
         width: 250px;
         position: center;
         text-align: center;
@@ -73,7 +88,7 @@ class Server:
         min-height: 30px;
         width: 100%;
         background-position: center top;
-        text-align: left;
+        text-align: center;
         font-size: 20px;
         padding: 11px 0px 12px 0px;
         font-weight: bold;}}
@@ -86,12 +101,21 @@ class Server:
         <input type="submit" id="Submit" value="Run" />
         </form>
         <p>Door is {state}</p>
+        <form action="./status?">
+        <input type="submit" id="Status" value="Update Status" />
+        </form>
+        <p>{self.getDateTime()} C</p>
         <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>
         </body>
         </html>
         """
         return str(html)
+    
+    def getDateTime(self):
+        dt = self.ntp.datetime
+        print(dt)
+        return dt
 
 ############################
 # User variable definitions
@@ -120,9 +144,11 @@ class Sonar:
         nt = 0
         while nt < 5:
             try:
-                if self.sonar.distance < self.trigDist
+                dist = self.sonar.distance
+                print(dist)
+                if dist < self.trigDist:
                     return "OPEN"
-                else
+                else:
                     return "CLOSE"
                 time.sleep(1)
                 break
@@ -139,7 +165,7 @@ class Sonar:
 def main():
     server = Server()
     control = Control()
-    sonar = Sonar()
+    sonar = Sonar(Conf())
 
     buf = bytearray(1024)
     state = "N/A"
@@ -157,6 +183,10 @@ def main():
         if request == "/run?":
             control.runControl()
             state = sonar.checkStatus()
+        elif request == "/status?":
+            state = sonar.checkStatus()
+        else:
+            pass
         html = server.webpage(state)
         nt = 0
         while nt < 5: 

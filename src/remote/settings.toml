@@ -1,0 +1,3 @@
+CIRCUITPY_WIFI_SSID = "BudSpencer"
+CIRCUITPY_WIFI_PASSWORD = "Pennstate123"
+triggerDistance = 20

@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.13.2
+# * v2024.01.13.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -11,9 +11,20 @@ import wifi
 import socketpool
 import time
 import microcontroller
+import adafruit_hcsr04
 
 ############################
 # User variable definitions
+############################
+class Conf:
+    def __init__(self):
+        try:
+            self.triggerDistance = os.getenv("trigDistance")
+        except:
+            self.triggerDistance = 20
+
+############################
+# Server
 ############################
 class Server:
     def __init__(self):
@@ -100,12 +111,27 @@ class Control:
 ############################
 # Sonar
 ############################
-class Sensor:
-    def __init__(self):
-        pass
+class Sonar:
+    def __init__(self, conf):
+        self.trigDist = conf.triggerDistance
+        self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP16, echo_pin=board.GP15)
     
     def checkStatus(self):
-        pass
+        nt = 0
+        while nt < 5:
+            try:
+                if self.sonar.distance < self.trigDist
+                    return "OPEN"
+                else
+                    return "CLOSE"
+                time.sleep(1)
+                break
+            except RuntimeError:
+                print("Retrying!")
+                nt+=1
+                time.sleep(1)
+        return "N/A"
+                
 
 ############################
 # Main
@@ -113,7 +139,7 @@ class Sensor:
 def main():
     server = Server()
     control = Control()
-    sensor = Sensor()
+    sonar = Sonar()
 
     buf = bytearray(1024)
     state = "N/A"
@@ -130,7 +156,7 @@ def main():
             request = ""
         if request == "/run?":
             control.runControl()
-            state = "N/A"
+            state = sonar.checkStatus()
         html = server.webpage(state)
         nt = 0
         while nt < 5: 

@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.12.1
+# * v2024.01.13.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -10,11 +10,12 @@ import digitalio
 import wifi
 import socketpool
 import time
+import microcontroller
 
 ############################
 # User variable definitions
 ############################
-class Conf:
+class Server:
     def __init__(self):
         try:
             wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
@@ -24,14 +25,10 @@ class Conf:
             self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
-            self.sock.listen(2)
+            self.sock.listen(1)
             print("\n Device IP: "+self.ip+"\n Listening")
         except:
             pass
-
-        self.btn = digitalio.DigitalInOut(board.GP26)
-        self.btn.direction = digitalio.Direction.OUTPUT
-        self.btn.value = True
 
     def webpage(self, state):
         #Template HTML
@@ -48,7 +45,7 @@ class Conf:
         #Submit {{
         font-size: 20px;
         font-weight: bold;
-        margin: 200px;
+        margin: 50px;
         margin-top: 10px;
         height: 250px;
         width: 250px;
@@ -77,13 +74,23 @@ class Conf:
         <form action="./run?">
         <input type="submit" id="Submit" value="Run" />
         </form>
+        <p>Door is {state}</p>
+        <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>
-        <p>Control is {state}</p>
         </body>
         </html>
         """
         return str(html)
-  
+
+############################
+# User variable definitions
+############################
+class Control:
+    def __init__(self):
+        self.btn = digitalio.DigitalInOut(board.GP26)
+        self.btn.direction = digitalio.Direction.OUTPUT
+        self.btn.value = True
+        
     def runControl(self):
         self.btn.value = False
         time.sleep(1)
@@ -91,28 +98,40 @@ class Conf:
         time.sleep(1)
 
 ############################
+# Sonar
+############################
+class Sensor:
+    def __init__(self):
+        pass
+    
+    def checkStatus(self):
+        pass
+
+############################
 # Main
 ############################
 def main():
-    conf = Conf()
+    server = Server()
+    control = Control()
+    sensor = Sensor()
 
     buf = bytearray(1024)
-    state = "CLOSE"
-    
+    state = "N/A"
+
     while True:
-        conn, addr = conf.sock.accept()
+        conn, addr = server.sock.accept()
         conn.settimeout(None)
 
         size = conn.recv_into(buf, 1024)
-    
+
         try:
             request = str(buf[:50]).split()[1]
         except:
             request = ""
         if request == "/run?":
-            conf.runControl()
-            state = "RUN"
-        html = conf.webpage(state)
+            control.runControl()
+            state = "N/A"
+        html = server.webpage(state)
         conn.send(html)
         conn.close()
 

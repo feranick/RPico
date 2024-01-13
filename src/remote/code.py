@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.13.1
+# * v2024.01.13.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -25,7 +25,7 @@ class Server:
             self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
-            self.sock.listen(1)
+            self.sock.listen(2)
             print("\n Device IP: "+self.ip+"\n Listening")
         except:
             pass
@@ -132,7 +132,15 @@ def main():
             control.runControl()
             state = "N/A"
         html = server.webpage(state)
-        conn.send(html)
+        nt = 0
+        while nt < 5: 
+            try:
+                conn.send(html)
+                time.sleep(1)
+                break
+            except ConnectionError:
+                nt+=1
+        
         conn.close()
 
 main()

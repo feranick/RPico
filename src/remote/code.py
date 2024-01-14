@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.13.3
+# * v2024.01.13.4
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -11,7 +11,8 @@ import wifi
 import socketpool
 import time
 import microcontroller
-from adafruit_datetime import datetime
+from adafruit_datetime import datetime, timezone
+import adafruit_ntp
 import adafruit_hcsr04
 
 ############################
@@ -38,11 +39,12 @@ class Server:
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
+            self.ntp = adafruit_ntp.NTP(pool, tz_offset=0)
             print("\n Device IP: "+self.ip+"\n Listening")
         except:
             pass
 
-    def webpage(self, state):
+    def webpage(self, state, label):
         #Template HTML
         html = f"""
         <!DOCTYPE html>
@@ -97,13 +99,13 @@ class Server:
         .notdone{{opacity:1;}}
         </style>
         <form action="./run?">
-        <input type="submit" id="Submit" value="Run" />
+        <input type="submit" id="Submit" value= {label} />
         </form>
         <p>Door is {state}</p>
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" />
         </form>
-        <p>{self.getDateTime()}</p>
+        <p>{self.getDateTime()} UTC</p>
         <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>
         </body>
@@ -112,8 +114,8 @@ class Server:
         return str(html)
 
     def getDateTime(self):
-        now = datetime.now()
-        print(now)
+        st = self.ntp.datetime
+        now = datetime(*st[:6])
         return now
 
 ############################
@@ -130,6 +132,12 @@ class Control:
         time.sleep(1)
         self.btn.value = True
         time.sleep(1)
+    
+    def setLabel(self, a):
+        if a == "OPEN":
+            return "CLOSE"
+        if a == "CLOSE":
+            return "OPEN"
 
 ############################
 # Sonar
@@ -149,7 +157,7 @@ class Sonar:
                     return "OPEN"
                 else:
                     return "CLOSE"
-                time.sleep(1)
+                time.sleep(2)
                 break
             except RuntimeError:
                 print("Retrying!")
@@ -183,7 +191,7 @@ def main():
             control.runControl()
             
         state = sonar.checkStatus()
-        html = server.webpage(state)
+        html = server.webpage(state, control.setLabel(state))
         nt = 0
         while nt < 5:
             try:

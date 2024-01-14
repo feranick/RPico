@@ -258,14 +258,13 @@ def main():
                 sens.sgp30.baseline_TVOC))
 
         disp.labels[0].text = "Temp: %0.1fC (%0.1fC)" % (celsius, float(sens.nws[0]))
-        disp.labels[1].text = "eCO2 = %d ppm" % sens.sgp30.eCO2
-        disp.labels[2].text = "TVOC = %d ppb" % sens.sgp30.TVOC
-        disp.labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))
-        if conf.serial:
-            disp.labels[4].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
-        disp.labels[5].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1]))
-        disp.labels[6].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
-        disp.labels[7].text = "Altitude = %0.2f meters" % sens.bme280.altitude
+        disp.labels[1].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1]))
+        disp.labels[2].text = "eCO2 = %d ppm" % sens.sgp30.eCO2
+        disp.labels[3].text = "TVOC = %d ppb" % sens.sgp30.TVOC
+        disp.labels[4].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))
+        disp.labels[5].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
+        disp.labels[6].text = "Altitude = %0.2f meters" % sens.bme280.altitude
+        disp.labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
         #time.sleep(0.2)
 
         # Set baseline

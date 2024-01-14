@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.14.1
+# * v2024.01.14.5
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -124,7 +124,7 @@ class Server:
 ############################
 class Control:
     def __init__(self):
-        self.btn = digitalio.DigitalInOut(board.GP26)
+        self.btn = digitalio.DigitalInOut(board.GP17)
         self.btn.direction = digitalio.Direction.OUTPUT
         self.btn.value = True
 
@@ -146,7 +146,7 @@ class Control:
 class Sonar:
     def __init__(self, conf):
         self.trigDist = conf.triggerDistance
-        self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP16, echo_pin=board.GP15)
+        self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
 
     def checkStatus(self):
         nt = 0

@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.14.4
+# * v2024.01.14.6
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -63,20 +63,22 @@ class Conf:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
+        default = [0,0,102000]
+        data = []
         try:
             self.r = self.requests.get(self.url, headers=self.headers)
-            slp = self.r.json()['properties']['seaLevelPressure']['value']
-            if slp is None:
-                slp = 1029
-            else:
-                slp = float(slp)/100
-            data = [self.r.json()['properties']['temperature']['value'],
-                self.r.json()['properties']['relativeHumidity']['value'], slp]
-            time.sleep(5)
+            raw = [self.r.json()['properties']['temperature']['value'],
+                self.r.json()['properties']['relativeHumidity']['value'],
+                self.r.json()['properties']['seaLevelPressure']['value']]
+            for i in range(len(raw)):
+                if raw[i] is None:
+                    data.append(default[i])
+                else:
+                    data.append(float(raw[i]))
             self.r.close()
             return data
         except:
-            return [0,0,1015]
+            return default
         #except Exception as e:
         #    print("Error:\n", str(e))
         #    print("Resetting microcontroller in 10 seconds")
@@ -178,7 +180,7 @@ class Sensors:
         disp.labels[5].text = "IP: "+self.conf.ip
 
         self.nws = conf.get_nws_data()
-        self.bme280.sea_level_pressure = self.nws[2]
+        self.bme280.sea_level_pressure = self.nws[2]/100
         disp.labels[2].text = "                      "
         disp.labels[3].text = "                      "
         disp.labels[5].text = "                      "
@@ -276,7 +278,7 @@ def main():
             sens.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
             if conf.serial:
                 print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (conf.co2eq_base, conf.tvoc_base))
-            sens.bme280.sea_level_pressure = sens.nws[2]
+            sens.bme280.sea_level_pressure = sens.nws[2]/100
 
 
 main()

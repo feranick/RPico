@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.14.5
+# * v2024.01.14.6
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -83,7 +83,7 @@ class Conf:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
-        default = [0,0,1020]
+        default = [0,0,102000]
         data = []
         try:
             self.r = self.requests.get(self.url, headers=self.headers)

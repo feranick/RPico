@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.11.2
+# * v2024.01.14.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -43,8 +43,8 @@ class Conf:
             self.web = bool(os.getenv("web"))
         except:
             self.station = "kbos"
-            self.co2eq_base = 0x958a
-            self.tvoc_base = 0x8ed3
+            self.co2eq_base = 0x9635
+            self.tvoc_base = 0x8560
             self.serial = True
             self.web = False
 
@@ -284,10 +284,11 @@ def main():
         disp.labels[1].text = "eCO2 = %d ppm" % sens.sgp30.eCO2
         disp.labels[2].text = "TVOC = %d ppb" % sens.sgp30.TVOC
         disp.labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))
+        if conf.serial:
+            labels[4].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
         disp.labels[5].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1]))
         disp.labels[6].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
         disp.labels[7].text = "Altitude = %0.2f meters" % sens.bme280.altitude
-        # labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
         #time.sleep(0.2)
         
         if conf.web:
@@ -305,7 +306,7 @@ def main():
             conf.tvoc_base = sens.sgp30.baseline_TVOC
             sens.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
             if conf.serial:
-                print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (sens.co2eq_base, sens.tvoc_base))
+                print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (conf.co2eq_base, conf.tvoc_base))
             sens.bme280.sea_level_pressure = sens.nws[2]
 
 

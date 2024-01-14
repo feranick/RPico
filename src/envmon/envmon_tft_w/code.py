@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.14.2
+# * v2024.01.14.4
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -42,8 +42,8 @@ class Conf:
             self.serial = bool(os.getenv("serial"))
         except:
             self.station = "kbos"
-            self.co2eq_base = 0x958a
-            self.tvoc_base = 0x8ed3
+            self.co2eq_base = 0x9635
+            self.tvoc_base = 0x8560
             self.serial = True
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
@@ -258,8 +258,9 @@ def main():
         disp.labels[0].text = "Temp: %0.1fC (%0.1fC)" % (celsius, float(sens.nws[0]))
         disp.labels[1].text = "eCO2 = %d ppm" % sens.sgp30.eCO2
         disp.labels[2].text = "TVOC = %d ppb" % sens.sgp30.TVOC
-        disp.labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))\
-        #disp.labels[4].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
+        disp.labels[3].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))
+        if conf.serial:
+            disp.labels[4].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
         disp.labels[5].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1]))
         disp.labels[6].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
         disp.labels[7].text = "Altitude = %0.2f meters" % sens.bme280.altitude

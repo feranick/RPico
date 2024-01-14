@@ -2,6 +2,6 @@ CIRCUITPY_WIFI_SSID = "your-ssid-here"
 CIRCUITPY_WIFI_PASSWORD = "your-ssid-password-here"
 serial = 0
 station = "kbos"
-co2eq_base = 0x958a
-tvoc_base = 0x8ed3
+co2eq_base = 0x9635
+tvoc_base = 0x8560
 

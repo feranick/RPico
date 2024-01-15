@@ -1,0 +1,7 @@
+20240115
+co2eq_base = 0x9ee65
+tvoc_base = 0x9ab8
+
+20240112
+co2eq_base = 0x9635
+tvoc_base = 0x8560

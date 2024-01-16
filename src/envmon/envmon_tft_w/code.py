@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.15.1
+# * v2024.01.15.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -57,6 +57,10 @@ class Conf:
             self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
         except RuntimeError as err:
+            print(err,"\n Restarting...")
+            time.sleep(2)
+            import microcontroller
+            microcontroller.reseet()
             print(err)
 
     ############################

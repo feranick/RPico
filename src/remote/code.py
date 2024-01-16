@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.15.1
+# * v2024.01.15.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -42,6 +42,10 @@ class Server:
             self.ntp = adafruit_ntp.NTP(pool, tz_offset=0)
             print("\n Device IP: "+self.ip+"\n Listening")
         except RuntimeError as err:
+            print(err,"\n Restarting...")
+            time.sleep(2)
+            import microcontroller
+            microcontroller.reseet()
             print(err)
 
     def webpage(self, state, label):

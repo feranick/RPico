@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.14.6
+# * v2024.01.15.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -56,8 +56,8 @@ class Conf:
             pool = socketpool.SocketPool(wifi.radio)
             self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
-        except:
-            pass
+        except RuntimeError as err:
+            print(err)
 
     ############################
     # Retrieve NVS data

@@ -58,8 +58,8 @@ class Conf:
             self.pool = socketpool.SocketPool(wifi.radio)
             self.requests = adafruit_requests.Session(self.pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
-        except:
-            pass
+        except RuntimeError as err:
+            print(err)
     
     def open_socket(self):
         self.sock = self.pool.socket(self.pool.AF_INET, self.pool.SOCK_STREAM)

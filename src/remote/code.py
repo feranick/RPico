@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.16.1
+# * v2024.01.16.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -33,6 +33,7 @@ class Server:
         try:
             wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
             os.getenv('CIRCUITPY_WIFI_PASSWORD'))
+            time.sleep(0.5)
             pool = socketpool.SocketPool(wifi.radio)
             self.ip = str(wifi.radio.ipv4_address)
             self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
@@ -207,5 +208,6 @@ def main():
                 nt+=1
 
         conn.close()
+        time.sleep(5)
 
 main()

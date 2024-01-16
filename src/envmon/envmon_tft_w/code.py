@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.15.2
+# * v2024.01.16.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -53,6 +53,7 @@ class Conf:
         try:
             wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
             os.getenv('CIRCUITPY_WIFI_PASSWORD'))
+            time.sleep(0.5)
             pool = socketpool.SocketPool(wifi.radio)
             self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
@@ -269,7 +270,7 @@ def main():
         disp.labels[5].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
         disp.labels[6].text = "Altitude = %0.2f meters" % sens.bme280.altitude
         disp.labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)
-        #time.sleep(0.2)
+        time.sleep(0.5)
 
         # Set baseline
         elapsed_sec += 1

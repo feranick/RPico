@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.15.2
+# * v2024.01.15.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -61,7 +61,7 @@ class Server:
         </head>
         <body>
         <style type="text/css">
-        #Submit {{
+        input[type="submit"] {{
         font-size: 20px;
         font-weight: bold;
         margin: 70px;
@@ -74,7 +74,7 @@ class Server:
         position:center;
         right:0px;
         padding: 0px;}}
-        #Status {{
+        input[type="text"] {{
         font-size: 20px;
         font-weight: bold;
         margin: 70px;

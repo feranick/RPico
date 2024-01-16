@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.16.2
+# * v2024.01.16.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -41,7 +41,7 @@ class Server:
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
             self.ntp = adafruit_ntp.NTP(pool, tz_offset=0)
-            print("\n Device IP: "+self.ip+"\n Listening")
+            print("\n Device IP: "+self.ip+"\n Listening...")
         except RuntimeError as err:
             print(err,"\n Restarting...")
             time.sleep(2)
@@ -107,7 +107,6 @@ class Server:
         <form action="./run?">
         <input type="submit" id="Submit" value= {label} />
         </form>
-        <p>Door is {state}</p>
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" />
         </form>
@@ -142,8 +141,10 @@ class Control:
     def setLabel(self, a):
         if a == "OPEN":
             return "CLOSE"
-        if a == "CLOSE":
+        elif a == "CLOSE":
             return "OPEN"
+        else:
+            return "N/A"
 
 ############################
 # Sonar
@@ -166,9 +167,10 @@ class Sonar:
                 time.sleep(2)
                 break
             except RuntimeError:
-                print("Retrying!")
+                print(" Retrying!")
                 nt+=1
                 time.sleep(1)
+        print(" Status not available")
         return "N/A"
 
 
@@ -208,6 +210,6 @@ def main():
                 nt+=1
 
         conn.close()
-        time.sleep(5)
+        time.sleep(2)
 
 main()

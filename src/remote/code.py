@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.18.1
+# * v2024.01.18.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -109,6 +109,7 @@ class Server:
         </form>
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" />
+        <p>Door is {state}</p>
         </form>
         <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>

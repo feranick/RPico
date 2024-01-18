@@ -110,7 +110,6 @@ class Server:
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" />
         </form>
-        <p>{self.getDateTime()} UTC</p>
         <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
         <p>Device IP: {self.ip}</p>
         </body>
@@ -161,9 +160,11 @@ class Sonar:
                 dist = self.sonar.distance
                 print(dist)
                 if dist < self.trigDist:
-                    return "OPEN"
+                    st = "OPEN"
                 else:
-                    return "CLOSE"
+                    st = "CLOSE"
+                time.sleep(1)
+                return st
             except RuntimeError:
                 print(" Retrying!")
                 nt+=1
@@ -208,6 +209,6 @@ def main():
                 nt+=1
 
         conn.close()
-        time.sleep(2)
+        time.sleep(1)
 
 main()

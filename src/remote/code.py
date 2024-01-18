@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.16.3
+# * v2024.01.18.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -164,8 +164,6 @@ class Sonar:
                     return "OPEN"
                 else:
                     return "CLOSE"
-                time.sleep(2)
-                break
             except RuntimeError:
                 print(" Retrying!")
                 nt+=1

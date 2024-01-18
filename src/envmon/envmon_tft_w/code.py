@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.16.1
+# * v2024.01.18.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -283,6 +283,8 @@ def main():
             if conf.serial:
                 print("**** Baseline: eCO2 = 0x%x, TVOC = 0x%x" % (conf.co2eq_base, conf.tvoc_base))
             sens.bme280.sea_level_pressure = sens.nws[2]/100
+
+        time.sleep(0.5)
 
 
 main()

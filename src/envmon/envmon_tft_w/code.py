@@ -286,6 +286,5 @@ def main():
             sens.bme280.sea_level_pressure = sens.nws[2]/100
 
         time.sleep(0.5)
-
-
+        
 main()

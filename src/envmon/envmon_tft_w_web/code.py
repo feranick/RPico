@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.15.2
+# * v2024.01.18.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -62,7 +62,7 @@ class Conf:
             print(err,"\n Restarting...")
             time.sleep(2)
             import microcontroller
-            microcontroller.reseet()
+            microcontroller.reset()
             print(err)
     
     def open_socket(self):

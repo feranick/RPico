@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.01.18.1
+# * v2024.01.18.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -57,11 +57,12 @@ class Conf:
             pool = socketpool.SocketPool(wifi.radio)
             self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
             self.ip = str(wifi.radio.ipv4_address)
+            time.sleep(2)
         except RuntimeError as err:
             print(err,"\n Restarting...")
             time.sleep(2)
             import microcontroller
-            microcontroller.reseet()
+            microcontroller.reset()
             print(err)
 
     ############################
@@ -274,7 +275,7 @@ def main():
 
         # Set baseline
         elapsed_sec += 1
-        if elapsed_sec > 300:
+        if elapsed_sec > 3600:
             sens.nws = conf.get_nws_data()
             elapsed_sec = 0
             conf.co2eq_base = sens.sgp30.baseline_eCO2

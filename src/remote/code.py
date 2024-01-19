@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.18.2
+# * v2024.01.18.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -46,7 +46,7 @@ class Server:
             print(err,"\n Restarting...")
             time.sleep(2)
             import microcontroller
-            microcontroller.reseet()
+            microcontroller.reset()
             print(err)
 
     def webpage(self, state, label):

@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.18.3
+# * v2024.01.19.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -104,15 +104,20 @@ class Server:
         .done{{opacity:0.2;}}
         .notdone{{opacity:1;}}
         </style>
+        <script language="javascript" >
+        function waitWarn() {{
+        document.getElementById("warnLabel").innerHTML = "Please wait...";}}
+        </script>
         <form action="./run?">
-        <input type="submit" id="Submit" value= {label} />
+        <input type="submit" id="Submit" value= {label} onclick=waitWarn() />
         </form>
         Door is {state}
         <form action="./status?">
-        <input type="submit" id="Status" value="Update Status" />
+        <input type="submit" id="Status" value="Update Status" onclick=waitWarn() />
+        <br><label id="warnLabel">Ready</label>
         </form>
-        <p>Temperature: {str(round(microcontroller.cpu.temperature,1))} C</p>
-        <p>Device IP: {self.ip}</p>
+        <br>Temperature: {str(round(microcontroller.cpu.temperature,1))} C
+        <br>Device IP: {self.ip}</p>
         </body>
         </html>
         """

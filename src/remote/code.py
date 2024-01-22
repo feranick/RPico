@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.19.1
+# * v2024.01.22.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -202,6 +202,7 @@ def main():
             request = ""
         if request == "/run?":
             control.runControl()
+            time.sleep(8)
 
         state = sonar.checkStatus()
         html = server.webpage(state, control.setLabel(state))

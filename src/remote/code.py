@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.22.3
+# * v2024.01.23.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -63,6 +63,8 @@ class Server:
         <body>
         <style type="text/css">
         #Submit {{
+        background-color: {label[1]};
+        color: white;
         font-size: 20px;
         font-weight: bold;
         margin: 70px;
@@ -106,18 +108,19 @@ class Server:
         </style>
         <script language="javascript" >
         function waitWarn() {{
-        document.getElementById("warnLabel").innerHTML = "Please wait...";}}
+        document.getElementById("warnLabel").innerHTML = "Please wait...";
+        }}
         </script>
         <form action="./run?">
-        <input type="submit" id="Submit" value= {label} onclick=waitWarn() />
+        <input type="submit" id="Submit" value= {label[0]} onclick=waitWarn() />
         </form>
         Door is {state}
         <form action="./status?">
         <input type="submit" id="Status" value="Update Status" onclick=waitWarn() />
         <br><label id="warnLabel">Ready</label>
         </form>
-        <br>Temperature: {str(round(microcontroller.cpu.temperature,1))} C
-        <br>Device IP: {self.ip}</p>
+        <br>Temperature: {str(round(microcontroller.cpu.temperature-10,1))} C
+        <small><small><br>Device IP: {self.ip}</p></small></small>
         </body>
         </html>
         """
@@ -145,11 +148,11 @@ class Control:
 
     def setLabel(self, a):
         if a == "OPEN":
-            return "CLOSE"
+            return ["CLOSE","red"]
         elif a == "CLOSE":
-            return "OPEN"
+            return ["OPEN","green"]
         else:
-            return "N/A"
+            return ["N/A","orange"]
 
 ############################
 # Sonar

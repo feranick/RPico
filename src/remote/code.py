@@ -205,7 +205,7 @@ def main():
             request = ""
         if request == "/run?":
             control.runControl()
-            time.sleep(8)
+            time.sleep(10)
 
         state = sonar.checkStatus()
         html = server.webpage(state, control.setLabel(state))

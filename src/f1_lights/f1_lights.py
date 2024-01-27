@@ -4,17 +4,17 @@ import digitalio
 import random
 
 t1 = 1
-t_off = 5
+t_off = 3
 
-led1 = digitalio.DigitalInOut(board.GP13)
+led1 = digitalio.DigitalInOut(board.GP28)
 led1.direction = digitalio.Direction.OUTPUT
-led2 = digitalio.DigitalInOut(board.GP12)
+led2 = digitalio.DigitalInOut(board.GP27)
 led2.direction = digitalio.Direction.OUTPUT
-led3 = digitalio.DigitalInOut(board.GP11)
+led3 = digitalio.DigitalInOut(board.GP22)
 led3.direction = digitalio.Direction.OUTPUT
-led4 = digitalio.DigitalInOut(board.GP10)
+led4 = digitalio.DigitalInOut(board.GP21)
 led4.direction = digitalio.Direction.OUTPUT
-led5 = digitalio.DigitalInOut(board.GP9)
+led5 = digitalio.DigitalInOut(board.GP19)
 led5.direction = digitalio.Direction.OUTPUT
 
 def ledOFF():

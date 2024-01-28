@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.27.1
+# * v2024.01.27.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -11,8 +11,8 @@ import wifi
 import socketpool
 import time
 import microcontroller
-#from adafruit_datetime import datetime, timezone
-#import adafruit_ntp
+from adafruit_datetime import datetime, timezone
+import adafruit_ntp
 import adafruit_hcsr04
 
 ############################
@@ -40,7 +40,7 @@ class Server:
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
-            #self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
+            self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
             print("\n Device IP: "+self.ip+"\n Listening...")
         except RuntimeError as err:
             print(err,"\n Restarting...")
@@ -120,17 +120,18 @@ class Server:
         <br><label id="warnLabel">Ready</label>
         </form>
         <br>Temperature: {str(round(microcontroller.cpu.temperature-10,1))} C
-        <small><small><br>Device IP: {self.ip}</p></small></small>
+        <br><br><small><small>{self.getDateTime()}</small></small>
+        <br><small><small>Device IP: {self.ip}</p></small></small>
         </body>
         </html>
         """
         return str(html)
-    '''
+    
     def getDateTime(self):
         st = self.ntp.datetime
         now = datetime(*st[:6])
         return now
-    '''
+    
 
 ############################
 # User variable definitions

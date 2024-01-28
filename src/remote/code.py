@@ -12,7 +12,7 @@ import socketpool
 import time
 import microcontroller
 from adafruit_datetime import datetime, timezone
-import adafruit_ntp
+#import adafruit_ntp
 import adafruit_hcsr04
 
 ############################
@@ -40,7 +40,7 @@ class Server:
             self.sock.settimeout(None)
             self.sock.bind((self.ip, 80))
             self.sock.listen(2)
-            self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
+            #self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
             print("\n Device IP: "+self.ip+"\n Listening...")
         except RuntimeError as err:
             print(err,"\n Restarting...")
@@ -125,11 +125,12 @@ class Server:
         </html>
         """
         return str(html)
-
+    '''
     def getDateTime(self):
         st = self.ntp.datetime
         now = datetime(*st[:6])
         return now
+    '''
 
 ############################
 # User variable definitions

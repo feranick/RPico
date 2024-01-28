@@ -11,7 +11,7 @@ import wifi
 import socketpool
 import time
 import microcontroller
-from adafruit_datetime import datetime, timezone
+#from adafruit_datetime import datetime, timezone
 #import adafruit_ntp
 import adafruit_hcsr04
 

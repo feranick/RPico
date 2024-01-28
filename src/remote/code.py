@@ -128,8 +128,11 @@ class Server:
         return str(html)
     
     def getDateTime(self):
-        st = self.ntp.datetime
-        now = datetime(*st[:6])
+        try:
+            st = self.ntp.datetime
+            now = datetime(*st[:6])
+        except:
+            now = ""
         return now
     
 

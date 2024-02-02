@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.02.1
+# * v2024.02.02.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -109,18 +109,22 @@ class Server:
         .notdone{{opacity:1;}}
         </style>
         <script language="javascript" >
-        function waitWarn() {{
+        function waitWarn(a) {{
         document.getElementById("warnLabel").innerHTML = "Please wait...";
         document.getElementById("Submit").disabled = true;
         document.getElementById("Status").disabled = true;
+        if (a == 0) {{
+            document.submitForm.submit();}}
+        if (a == 1) {{
+            document.statusForm.submit();}}
         }}
         </script>
-        <form action="./run?">
-        <input type="submit" id="Submit" value= {label[0]} onclick=waitWarn() />
+        <form name="submitForm" action="./run?">
+        <input type="submit" id="Submit" value= {label[0]} onclick=waitWarn(0) />
         </form>
         Door is {state}
-        <form action="./status?">
-        <input type="submit" id="Status" value="Update Status" onclick=waitWarn() />
+        <form name="statusForm" action="./status?">
+        <input type="submit" id="Status" value="Update Status" onclick=waitWarn(1) />
         <br><label id="warnLabel">Ready</label>
         </form>
         <br>Temperature: {temperature}
@@ -188,7 +192,7 @@ class Sensors:
                 time.sleep(1)
                 return st
             except RuntimeError:
-                print(" Retrying!")
+                print(" Check Sonar Status: Retrying!")
                 nt += 1
                 time.sleep(1)
         print(" Sonar status not available")
@@ -233,6 +237,7 @@ def main():
         except:
             request = ""
         if request == "/run?":
+            print("Run Control")
             control.runControl()
             time.sleep(10)
 

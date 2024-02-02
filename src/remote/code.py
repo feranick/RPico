@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.01.1
+# * v2024.02.01.4
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -170,13 +170,15 @@ class Sensors:
         self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
         i2c = busio.I2C(board.GP1, board.GP0)
         self.mcp = adafruit_mcp9808.MCP9808(i2c)
+        self.numTimes = 1
+        self.avDeltaT = 0
 
     def checkStatusSonar(self):
         nt = 0
         while nt < 5:
             try:
                 dist = self.sonar.distance
-                print(dist)
+                print("Distance: "+str(dist))
                 if dist < self.trigDist:
                     st = "OPEN"
                 else:
@@ -189,13 +191,23 @@ class Sensors:
                 time.sleep(1)
         print(" Sonar status not available")
         return "N/A"
-        
+
     def getTemperature(self):
-        try: 
-            return str(self.mcp.temperature)+" C"
+        t_cpu = microcontroller.cpu.temperature
+        try:
+            t_mcp = self.mcp.temperature
+            delta_t = t_cpu - t_mcp
+            if self.numTimes >= 2e+1:
+                self.numTimes = int(1e+1)
+            self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
+            self.numTimes += 1
+            print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
+            time.sleep(1)
+            return str(round(t_mcp,1))+" C"
         except:
-            print(" MCP9806 thermometer not available...")
-            return str(round(microcontroller.cpu.temperature-10, 1))+" C (CPU)"
+            print("MCP9806 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
+            time.sleep(1)
+            return str(round(t_cpu-self.avDeltaT, 1))+" C (CPU)"
 
 ############################
 # Main

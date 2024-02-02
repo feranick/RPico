@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.01.1
+# * v2024.02.01.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -15,7 +15,7 @@ import microcontroller
 from adafruit_datetime import datetime
 import adafruit_ntp
 import adafruit_hcsr04
-#import adafruit_mcp9808
+import adafruit_mcp9808
 
 ############################
 # User variable definitions
@@ -168,8 +168,8 @@ class Sensors:
     def __init__(self, conf):
         self.trigDist = conf.triggerDistance
         self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
-        #i2c = busio.I2C(board.SCL1, board.SDA1)
-        #self.mcp = adafruit_mcp9808.MCP9808(i2c)
+        i2c = busio.I2C(board.GP1, board.GP0)
+        self.mcp = adafruit_mcp9808.MCP9808(i2c)
 
     def checkStatusSonar(self):
         nt = 0
@@ -191,12 +191,11 @@ class Sensors:
         return "N/A"
         
     def getTemperature(self):
-        #try: 
-        #    return str(self.mcp.temperature)+"C"
-        #except:
-        #    return str(round(microcontroller.cpu.temperature-10, 1))
-        return str(round(microcontroller.cpu.temperature-10, 1))+"C (CPU)"
-        
+        try: 
+            return str(self.mcp.temperature)+"C"
+        except:
+            return str(round(microcontroller.cpu.temperature-10, 1))+"C (CPU)"
+
 ############################
 # Main
 ############################

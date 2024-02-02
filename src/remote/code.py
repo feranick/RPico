@@ -1,19 +1,21 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.01.27.2
+# * v2024.02.01.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
 import os
+import busio
 import board
 import digitalio
 import wifi
 import socketpool
 import time
 import microcontroller
-from adafruit_datetime import datetime, timezone
+from adafruit_datetime import datetime
 import adafruit_ntp
 import adafruit_hcsr04
+#import adafruit_mcp9808
 
 ############################
 # User variable definitions
@@ -24,7 +26,7 @@ class Conf:
             self.triggerDistance = float(os.getenv("trigDistance"))
         except:
             self.triggerDistance = 20
-
+        
 ############################
 # Server
 ############################
@@ -43,14 +45,14 @@ class Server:
             self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
             print("\n Device IP: "+self.ip+"\n Listening...")
         except RuntimeError as err:
-            print(err,"\n Restarting...")
+            print(err, "\n Restarting...")
             time.sleep(2)
             import microcontroller
             microcontroller.reset()
             print(err)
 
-    def webpage(self, state, label):
-        #Template HTML
+    def webpage(self, state, label, temperature):
+        # Template HTML
         html = f"""
         <!DOCTYPE html>
         <html>
@@ -119,7 +121,7 @@ class Server:
         <input type="submit" id="Status" value="Update Status" onclick=waitWarn() />
         <br><label id="warnLabel">Ready</label>
         </form>
-        <br>Temperature: {str(round(microcontroller.cpu.temperature-10,1))} C
+        <br>Temperature: {temperature}
         <br><br><small><small>{self.getDateTime()}</small></small>
         <br><small><small>Device IP: {self.ip}</p></small></small>
         </body>
@@ -153,21 +155,23 @@ class Control:
 
     def setLabel(self, a):
         if a == "OPEN":
-            return ["CLOSE","red"]
+            return ["CLOSE", "red"]
         elif a == "CLOSE":
-            return ["OPEN","green"]
+            return ["OPEN", "green"]
         else:
-            return ["N/A","orange"]
+            return ["N/A", "orange"]
 
 ############################
-# Sonar
+# Sensors
 ############################
-class Sonar:
+class Sensors:
     def __init__(self, conf):
         self.trigDist = conf.triggerDistance
         self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
+        #i2c = busio.I2C(board.SCL1, board.SDA1)
+        #self.mcp = adafruit_mcp9808.MCP9808(i2c)
 
-    def checkStatus(self):
+    def checkStatusSonar(self):
         nt = 0
         while nt < 5:
             try:
@@ -181,19 +185,25 @@ class Sonar:
                 return st
             except RuntimeError:
                 print(" Retrying!")
-                nt+=1
+                nt += 1
                 time.sleep(1)
         print(" Status not available")
         return "N/A"
-
-
+        
+    def getTemperature(self):
+        #try: 
+        #    return str(self.mcp.temperature)+"C"
+        #except:
+        #    return str(round(microcontroller.cpu.temperature-10, 1))
+        return str(round(microcontroller.cpu.temperature-10, 1))+"C (CPU)"
+        
 ############################
 # Main
 ############################
 def main():
     server = Server()
     control = Control()
-    sonar = Sonar(Conf())
+    sensors = Sensors(Conf())
 
     buf = bytearray(1024)
     state = "N/A"
@@ -212,8 +222,8 @@ def main():
             control.runControl()
             time.sleep(10)
 
-        state = sonar.checkStatus()
-        html = server.webpage(state, control.setLabel(state))
+        state = sensors.checkStatusSonar()
+        html = server.webpage(state, control.setLabel(state), sensors.getTemperature())
         nt = 0
         while nt < 5:
             try:
@@ -221,7 +231,7 @@ def main():
                 time.sleep(1)
                 break
             except ConnectionError:
-                nt+=1
+                nt += 1
 
         conn.close()
         time.sleep(1)

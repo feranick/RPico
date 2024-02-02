@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.01.2
+# * v2024.02.01.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -187,14 +187,15 @@ class Sensors:
                 print(" Retrying!")
                 nt += 1
                 time.sleep(1)
-        print(" Status not available")
+        print(" Sonar status not available")
         return "N/A"
         
     def getTemperature(self):
         try: 
-            return str(self.mcp.temperature)+"C"
+            return str(self.mcp.temperature)+" C"
         except:
-            return str(round(microcontroller.cpu.temperature-10, 1))+"C (CPU)"
+            print(" MCP9806 thermometer not available...")
+            return str(round(microcontroller.cpu.temperature-10, 1))+" C (CPU)"
 
 ############################
 # Main

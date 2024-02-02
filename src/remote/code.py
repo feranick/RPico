@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.01.4
+# * v2024.02.02.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -111,6 +111,8 @@ class Server:
         <script language="javascript" >
         function waitWarn() {{
         document.getElementById("warnLabel").innerHTML = "Please wait...";
+        document.getElementById("Submit").disabled = true;
+        document.getElementById("Status").disabled = true;
         }}
         </script>
         <form action="./run?">

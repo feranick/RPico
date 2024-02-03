@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.02.2
+# * v2024.02.03.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -149,7 +149,7 @@ class Server:
 ############################
 class Control:
     def __init__(self):
-        self.btn = digitalio.DigitalInOut(board.GP17)
+        self.btn = digitalio.DigitalInOut(board.GP16)
         self.btn.direction = digitalio.Direction.OUTPUT
         self.btn.value = True
 

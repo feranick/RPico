@@ -2,13 +2,9 @@ import time
 import board
 import digitalio
 import random
-import adafruit_hcsr04
 
 t1 = 1
 t_off = 3
-
-trigDist = 10
-sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP11, echo_pin=board.GP13)
 
 led1 = digitalio.DigitalInOut(board.GP28)
 led1.direction = digitalio.Direction.OUTPUT
@@ -47,18 +43,3 @@ while True:
     ledG.value = True
     time.sleep(t2)
     
-    
-    '''dist = sonar.distance
-    print("distance:", sonar.distance)
-    if dist < trigDist:
-        pass
-        #t2 = random.uniform(1, 4)
-        #led1.value = True
-        #led2.value = True
-        #led3.value = True
-        #led4.value = True
-        #led5.value = True
-    else:
-        ledOFF()
-    time.sleep(0.5)
-    '''

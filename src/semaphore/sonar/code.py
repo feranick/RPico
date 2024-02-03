@@ -7,7 +7,7 @@ import adafruit_hcsr04
 t1 = 1
 t_off = 3
 
-trigDist = 25
+trigDist = 30
 sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP13, echo_pin=board.GP15)
 
 led1 = digitalio.DigitalInOut(board.GP28)

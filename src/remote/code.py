@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.03.1
+# * v2024.02.05.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -151,12 +151,20 @@ class Control:
     def __init__(self):
         self.btn = digitalio.DigitalInOut(board.GP16)
         self.btn.direction = digitalio.Direction.OUTPUT
-        self.btn.value = True
-
+        self.btn.value = False  # Set this: True for remote control; False for direct.
+    
+    # Version with Transistor and remote control
+    '''
     def runControl(self):
         self.btn.value = False
         time.sleep(1)
         self.btn.value = True
+        time.sleep(1)
+    '''
+    def runControl(self):
+        self.btn.value = True
+        time.sleep(2)
+        self.btn.value = False
         time.sleep(1)
 
     def setLabel(self, a):

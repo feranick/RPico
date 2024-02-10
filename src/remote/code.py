@@ -151,21 +151,21 @@ class Control:
     def __init__(self):
         self.btn = digitalio.DigitalInOut(board.GP18)
         self.btn.direction = digitalio.Direction.OUTPUT
-        self.btn.value = True  # Set this: True for remote control; False for direct.
+        self.btn.value = False  # Set this: True for remote control; False for direct.
     
     # Version with Transistor and remote control
     def runControl(self):
-        self.btn.value = False
-        time.sleep(1)
         self.btn.value = True
         time.sleep(1)
+        self.btn.value = False
+        time.sleep(1)
     
-    # Version with Transistor and remote control
+    # Version with Transistor and direct
     '''
     def runControl(self):
-        self.btn.value = True
-        time.sleep(2)
         self.btn.value = False
+        time.sleep(2)
+        self.btn.value = True
         time.sleep(1)
     '''
     

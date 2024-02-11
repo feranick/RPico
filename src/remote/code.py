@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.09.2
+# * v2024.02.11.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -26,7 +26,7 @@ class Conf:
             self.triggerDistance = float(os.getenv("trigDistance"))
         except:
             self.triggerDistance = 20
-        
+
 ############################
 # Server
 ############################
@@ -134,7 +134,7 @@ class Server:
         </html>
         """
         return str(html)
-    
+
     def getDateTime(self):
         try:
             st = self.ntp.datetime
@@ -142,7 +142,7 @@ class Server:
         except:
             now = ""
         return now
-    
+
 
 ############################
 # User variable definitions
@@ -152,14 +152,14 @@ class Control:
         self.btn = digitalio.DigitalInOut(board.GP18)
         self.btn.direction = digitalio.Direction.OUTPUT
         self.btn.value = False  # Set this: True for remote control; False for direct.
-    
+
     # Version with Transistor and remote control
     def runControl(self):
         self.btn.value = True
-        time.sleep(1)
+        time.sleep(2)
         self.btn.value = False
         time.sleep(1)
-    
+
     # Version with Transistor and direct
     '''
     def runControl(self):
@@ -168,7 +168,7 @@ class Control:
         self.btn.value = True
         time.sleep(1)
     '''
-    
+
     def setLabel(self, a):
         if a == "OPEN":
             return ["CLOSE", "red"]
@@ -191,7 +191,7 @@ class Sensors:
 
     def checkStatusSonar(self):
         nt = 0
-        while nt < 5:
+        while nt < 2:
             try:
                 dist = self.sonar.distance
                 print("Distance: "+str(dist))

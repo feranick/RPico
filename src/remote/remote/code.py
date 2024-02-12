@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.11.1
+# * v2024.02.12.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -46,10 +46,12 @@ class Server:
             print("\n Device IP: "+self.ip+"\n Listening...")
         except RuntimeError as err:
             print(err, "\n Restarting...")
-            time.sleep(2)
-            import microcontroller
-            microcontroller.reset()
-            print(err)
+            self.reboot()
+            
+    def reboot(self):
+        time.sleep(2)
+        import microcontroller
+        microcontroller.reset()
 
     def webpage(self, state, label, temperature):
         # Template HTML
@@ -254,15 +256,18 @@ def main():
         state = sensors.checkStatusSonar()
         html = server.webpage(state, control.setLabel(state), sensors.getTemperature())
         nt = 0
-        while nt < 5:
+        while nt < 10:
             try:
                 conn.send(html)
                 time.sleep(1)
                 break
             except ConnectionError:
                 nt += 1
+                if nt == 5:
+                    server.reboot()
 
         conn.close()
         time.sleep(1)
+
 
 main()

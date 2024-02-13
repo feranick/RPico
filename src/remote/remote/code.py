@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.12.1
+# * v2024.02.13.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -261,7 +261,10 @@ def main():
                 conn.send(html)
                 time.sleep(1)
                 break
-            except ConnectionError:
+            except ConnectionError as err:
+                with open("/error.txt", "a") as fp:
+                    fp.write(err)
+                    fp.flush()
                 nt += 1
                 if nt == 5:
                     server.reboot()

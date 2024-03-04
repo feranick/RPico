@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.03.1
+# * v2024.03.04.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -53,7 +53,7 @@ class Server:
     def setup_server(self):
         self.pool = socketpool.SocketPool(wifi.radio)
         self.ip = str(wifi.radio.ipv4_address)
-        self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
+        self.sock = self.pool.socket(self.pool.AF_INET, self.pool.SOCK_STREAM)
         self.sock.settimeout(None)
         self.sock.bind((self.ip, 80))
         self.sock.listen(2)

@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.02.13.3
+# * v2024.03.03.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -33,20 +33,33 @@ class Conf:
 class Server:
     def __init__(self):
         try:
-            wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
-            os.getenv('CIRCUITPY_WIFI_PASSWORD'))
-            time.sleep(0.5)
-            pool = socketpool.SocketPool(wifi.radio)
-            self.ip = str(wifi.radio.ipv4_address)
-            self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
-            self.sock.settimeout(None)
-            self.sock.bind((self.ip, 80))
-            self.sock.listen(2)
-            self.ntp = adafruit_ntp.NTP(pool, tz_offset=-5)
-            print("\n Device IP: "+self.ip+"\n Listening...")
+            self.connect_wifi()
+            self.setup_server()
+            self.setup_ntp()
+            print("\nDevice IP:", self.ip, "\nListening...")
         except RuntimeError as err:
-            print(err, "\n Restarting...")
+            print(err, "\nRestarting...")
             self.reboot()
+
+    def connect_wifi(self):
+        ssid = os.getenv('CIRCUITPY_WIFI_SSID')
+        password = os.getenv('CIRCUITPY_WIFI_PASSWORD')
+        if ssid is None or password is None:
+            raise RuntimeError("WiFi credentials not found.")
+        
+        wifi.radio.connect(ssid, password)
+        time.sleep(0.5)
+
+    def setup_server(self):
+        self.pool = socketpool.SocketPool(wifi.radio)
+        self.ip = str(wifi.radio.ipv4_address)
+        self.sock = pool.socket(pool.AF_INET, pool.SOCK_STREAM)
+        self.sock.settimeout(None)
+        self.sock.bind((self.ip, 80))
+        self.sock.listen(2)
+
+    def setup_ntp(self):
+        self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
             
     def reboot(self):
         time.sleep(2)

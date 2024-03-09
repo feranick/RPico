@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.04.1
+# * v2024.03.08.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -16,6 +16,9 @@ from adafruit_datetime import datetime
 import adafruit_ntp
 import adafruit_hcsr04
 import adafruit_mcp9808
+import supervisor
+
+supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 
 ############################
 # User variable definitions

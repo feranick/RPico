@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.08.1
+# * v2024.03.10.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -63,6 +63,11 @@ class Server:
 
     def setup_ntp(self):
         self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
+        
+    def check_connection(self):
+        wifi_conn = wifi.get_current_connection()
+        if not wifi_conn.is_alive():
+            self.reboot()
             
     def reboot(self):
         time.sleep(2)
@@ -255,6 +260,7 @@ def main():
     state = "N/A"
 
     while True:
+        server.check_connection()
         conn, addr = server.sock.accept()
         conn.settimeout(None)
 

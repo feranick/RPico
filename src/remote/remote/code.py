@@ -65,8 +65,7 @@ class Server:
         self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
         
     def check_connection(self):
-        wifi_conn = wifi.get_current_connection()
-        if not wifi_conn.is_alive():
+        if not wifi.Radio.connected:
             self.reboot()
             
     def reboot(self):

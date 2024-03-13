@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.12.1
+# * v2024.03.13.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -48,12 +48,12 @@ class Server:
         ssid = os.getenv('CIRCUITPY_WIFI_SSID')
         password = os.getenv('CIRCUITPY_WIFI_PASSWORD')
         if ssid is None or password is None:
-            raise RuntimeError("WiFi credentials not found.")  
-        while not bool(wifi.Radio.connected): 
+            raise RuntimeError("WiFi credentials not found.")
+        while not bool(wifi.Radio.connected):
             print("\nConnecting to WiFi...")
             wifi.radio.connect(ssid, password)
             time.sleep(1)
-    
+
     def check_connection(self):
         if not bool(wifi.Radio.connected):
             self.reboot()
@@ -68,7 +68,7 @@ class Server:
 
     def setup_ntp(self):
         self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
-            
+
     def reboot(self):
         time.sleep(2)
         import microcontroller
@@ -264,7 +264,7 @@ def main():
         conn, addr = server.sock.accept()
         conn.settimeout(None)
 
-        #size = conn.recv_into(buf, 1024)
+        size = conn.recv_into(buf, 1024)
 
         try:
             request = str(buf[:50]).split()[1]

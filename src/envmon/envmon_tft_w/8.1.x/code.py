@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2024.03.15.1
+# * v2024.01.18.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -29,9 +29,6 @@ try:
     from fourwire import FourWire
 except ImportError:
     from displayio import FourWire
-    
-import supervisor
-supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 
 ############################
 # User variable definitions

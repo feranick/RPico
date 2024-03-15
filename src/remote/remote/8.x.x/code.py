@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.13.1
+# * v2024.03.15.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -289,4 +289,5 @@ def main():
                 time.sleep(1)
                 if nt == 5:
                     server.reboot()
+
 main()

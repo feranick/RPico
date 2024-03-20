@@ -2,9 +2,12 @@ import time
 import board
 import digitalio
 import adafruit_hcsr04
+import supervisor
+
+supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 
 trigDist = 10
-sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP13, echo_pin=board.GP15)
+sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP13, echo_pin=board.GP15, timeout=0.5)
 
 led1 = digitalio.DigitalInOut(board.GP28)
 led1.direction = digitalio.Direction.OUTPUT

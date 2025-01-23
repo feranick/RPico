@@ -45,8 +45,8 @@ class Conf:
             self.serial = bool(os.getenv("serial"))
         except:
             self.station = "kbos"
-            self.co2eq_base = 0x96c4
-            self.tvoc_base = 0x8ad9
+            self.co2eq_base = 0x89e6
+            self.tvoc_base = 0x8f2a
             self.serial = True
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"

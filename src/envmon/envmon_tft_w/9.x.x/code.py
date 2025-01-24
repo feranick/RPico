@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2025.01.24.1
+# * v2025.01.24.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -176,6 +176,7 @@ class Sensors:
 
         i2c = busio.I2C(board.GP1, board.GP0, frequency=100000)
         self.sgp30 = adafruit_sgp30.Adafruit_SGP30(i2c)
+        self.sgp30.iaq_init()
         self.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
         if conf.serial:
             print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (conf.co2eq_base, conf.tvoc_base))

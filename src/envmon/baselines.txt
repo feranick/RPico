@@ -11,5 +11,5 @@ co2eq_base = 0x9635
 tvoc_base = 0x8560
 
 20250124
-co2eq_base = 0x9a61
-tvoc_base = 0xfcd9
+co2eq_base = 0x9b9b
+tvoc_base = 0xfd17

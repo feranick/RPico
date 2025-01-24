@@ -1,15 +1,19 @@
-Original
-co2eq_base = 0x8973
-tvoc_base = 0x8aae
+20250124
+co2eq_base = 0x2e6
+tvoc_base = 0xfe26
 
-20240115
-co2eq_base = 0x9ee65
-tvoc_base = 0x9ab8
+20250123
+co2eq_base = 0x9b9b
+tvoc_base = 0xfd17
 
 20240112
 co2eq_base = 0x9635
 tvoc_base = 0x8560
 
-20250124
-co2eq_base = 0x9b9b
-tvoc_base = 0xfd17
+20240115
+co2eq_base = 0x9ee65
+tvoc_base = 0x9ab8
+
+Original
+co2eq_base = 0x8973
+tvoc_base = 0x8aae

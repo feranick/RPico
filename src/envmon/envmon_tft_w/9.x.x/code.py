@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2025.01.24.3
+# * v2025.01.30.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -45,8 +45,8 @@ class Conf:
             self.serial = bool(os.getenv("serial"))
         except:
             self.station = "kbos"
-            self.co2eq_base = 0x2e6
-            self.tvoc_base = 0xfe26
+            self.co2eq_base = 0x8ce0
+            self.tvoc_base = 0x91e4
             self.serial = True
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"

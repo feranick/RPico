@@ -1,6 +1,8 @@
-20250130
-co2eq_base = 0x8ce0
-tvoc_base = 0x91e4
+
+
+20250203
+co2eq_base = 0xfe77
+tvoc_base = 0xfee4
 
 20250123
 co2eq_base = 0x9b9b

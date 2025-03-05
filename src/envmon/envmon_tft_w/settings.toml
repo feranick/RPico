@@ -5,6 +5,6 @@ CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 CIRCUITPY_WEB_API_PORT=205
 serial = 1
 station = "kbos"
-co2eq_base = 0xfe77
-tvoc_base = 0xfee4
+co2eq_base = 0xfd96
+tvoc_base = 0xfe34
 

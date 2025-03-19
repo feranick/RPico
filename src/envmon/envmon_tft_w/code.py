@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2025.02.21.1
+# * v2025.03.19.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -23,13 +23,8 @@ from adafruit_display_text import label
 from adafruit_st7789 import ST7789
 from adafruit_bme280 import basic as adafruit_bme280
 import adafruit_sgp30
+from fourwire import FourWire
 
-# Compatibility with CircuitPython 9.x.x or 8.x.x
-try:
-    from fourwire import FourWire
-except ImportError:
-    from displayio import FourWire
-    
 import supervisor
 supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 

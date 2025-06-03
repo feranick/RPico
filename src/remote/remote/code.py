@@ -222,13 +222,14 @@ class Sensors:
             self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
         except Exception as e:
             print(f"Failed to initialize HCSR04: {e}")
+
+        self.trigDist = conf.triggerDistance
+        i2c = busio.I2C(board.GP1, board.GP0)
         try:
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
         except Exception as e:
             print(f"Failed to initialize MCP9808: {e}")    
-            
-        self.trigDist = conf.triggerDistance
-        i2c = busio.I2C(board.GP1, board.GP0)
+
         self.numTimes = 1
         self.avDeltaT = 0
 

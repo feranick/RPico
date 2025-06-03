@@ -72,7 +72,10 @@ class Server:
         self.sock.listen(2)
 
     def setup_ntp(self):
-        self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
+        try:
+            self.ntp = adafruit_ntp.NTP(self.pool, tz_offset=-5)
+        except Exception as e: # Catch specific errors like OSError if possible
+            print(f"Failed to setup NTP: {e}")
 
     def reboot(self):
         time.sleep(2)
@@ -164,12 +167,15 @@ class Server:
         return str(html)
 
     def getDateTime(self):
-        try:
-            st = self.ntp.datetime
-            now = datetime(*st[:6])
-        except:
-            now = ""
-        return now
+        if self.ntp and self.ntp.datetime: # Check ntp object and if datetime is available
+            try:
+                st = self.ntp.datetime
+                # Format the datetime object as a string if needed, e.g.:
+                return f"{st.tm_year:04}-{st.tm_mon:02}-{st.tm_mday:02} {st.tm_hour:02}:{st.tm_min:02}:{st.tm_sec:02}"
+            except Exception as e:
+                print(f"Error converting NTP time: {e}")
+                return "Time N/A"
+        return "Time N/A"
 
 
 ############################

@@ -4,19 +4,40 @@
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
+import wifi
+import time
+import microcontroller
+import supervisor
+
+if supervisor.runtime.safe_mode_reason is not None:
+    try:
+        print("Performing initial WiFi radio state check/reset...")
+        if wifi.radio.connected:
+            print("Radio was connected, disconnecting first.")
+            wifi.radio.stop_station() # Requires CircuitPython 8+
+            time.sleep(0.5)
+            wifi.radio.start_station()
+
+        print("Toggling WiFi radio enabled state...")
+        wifi.radio.enabled = False
+        time.sleep(1.0) # Increased delay
+        wifi.radio.enabled = True
+        time.sleep(1.0) # Increased delay
+        print("Initial WiFi radio toggle complete.")
+    except Exception as e:
+        print(f"Error during initial WiFi radio toggle: {e}")
+        # Decide if you want to proceed or perhaps trigger a safe mode or longer delay
+
 import os
 import busio
 import board
 import digitalio
-import wifi
 import socketpool
 import time
-import microcontroller
 from adafruit_datetime import datetime
 import adafruit_ntp
 import adafruit_hcsr04
 import adafruit_mcp9808
-import supervisor
 
 supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 
@@ -27,13 +48,13 @@ class Conf:
     def __init__(self):
         self.triggerDistance = 20.0 # Default to float
         try:
-            trig_dist_env = os.getenv("trigDistance")
+            trig_dist_env = os.getenv("triggerDistance")
             if trig_dist_env is not None:
                 self.triggerDistance = float(trig_dist_env)
             else:
-                print("Warning: 'trigDistance' not found in settings.toml. Using default.")
+                print("Warning: 'triggerDistance' not found in settings.toml. Using default.")
         except ValueError:
-            print(f"Warning: Invalid trigDistance '{trig_dist_env}' in settings.toml. Using default.")
+            print(f"Warning: Invalid triggerDistance '{trig_dist_env}' in settings.toml. Using default.")
 
 ############################
 # Server
@@ -46,7 +67,14 @@ class Server:
             self.setup_ntp()
             print("\nDevice IP:", self.ip, "\nListening...")
         except RuntimeError as err:
-            print(err, "\nRestarting...")
+            print(f"Initialization error: {err}")
+            print("Rebooting in 5 seconds...")
+            time.sleep(5)
+            self.reboot()
+        except Exception as e: # Catch any other unexpected error during init
+            print(f"Unexpected critical error: {e}")
+            print("Rebooting in 5 seconds due to unexpected error...")
+            time.sleep(5)
             self.reboot()
 
     def connect_wifi(self):
@@ -54,10 +82,28 @@ class Server:
         password = os.getenv('CIRCUITPY_WIFI_PASSWORD')
         if ssid is None or password is None:
             raise RuntimeError("WiFi credentials not found.")
-        while not bool(wifi.Radio.connected):
-            print("\nConnecting to WiFi...")
-            wifi.radio.connect(ssid, password)
-            time.sleep(1)
+            
+        MAX_WIFI_ATTEMPTS = 5
+        attempt_count = 0
+        time.sleep(5)
+        while not bool(wifi.radio.connected): # Use wifi.radio.connected directly
+            if attempt_count >= MAX_WIFI_ATTEMPTS:
+                raise RuntimeError("Failed to connect to WiFi after multiple attempts.")
+            print(f"\nConnecting to WiFi (attempt {attempt_count + 1}/{MAX_WIFI_ATTEMPTS})...")
+            try:
+                wifi.radio.connect(ssid, password)
+                time.sleep(2) # Give a bit more time
+            except ConnectionError as e:
+                print(f"WiFi Connection Error: {e}")
+                time.sleep(5) # Wait longer on connection errors
+            except Exception as e: # Other potential errors like OSError
+                print(f"WiFi other connect error: {e}")
+                time.sleep(3)
+            attempt_count += 1
+        if wifi.radio.connected:
+            print("WiFi Connected!")
+        else:
+            raise RuntimeError("Failed to connect to WiFi.") # Should be caught by previous check
 
     def check_connection(self):
         if not bool(wifi.Radio.connected):
@@ -69,6 +115,7 @@ class Server:
         self.sock = self.pool.socket(self.pool.AF_INET, self.pool.SOCK_STREAM)
         self.sock.settimeout(None)
         self.sock.bind((self.ip, 80))
+        #self.sock.bind(('', 80))
         self.sock.listen(2)
 
     def setup_ntp(self):
@@ -227,11 +274,13 @@ class Sensors:
         i2c = busio.I2C(board.GP1, board.GP0)
         try:
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
+            self.avDeltaT = microcontroller.cpu.temperature - self.mcp.temperature
+            print("mcp OK")
         except Exception as e:
-            print(f"Failed to initialize MCP9808: {e}")    
-
+            self.avDeltaT = 0
+            print(f"Failed to initialize MCP9808: {e}")
         self.numTimes = 1
-        self.avDeltaT = 0
+        
 
     def checkStatusSonar(self):
         if not self.sonar:
@@ -246,12 +295,12 @@ class Sensors:
                     st = "OPEN"
                 else:
                     st = "CLOSE"
-                time.sleep(1)
+                time.sleep(0.5)
                 return st
             except RuntimeError:
                 print(" Check Sonar Status: Retrying!")
                 nt += 1
-                time.sleep(1)
+                time.sleep(0.5)
         print(" Sonar status not available")
         return "N/A"
 

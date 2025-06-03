@@ -197,8 +197,8 @@ class Sensors:
         el_sec = 0
         if conf.serial:
             print("SGP30 sensor Warming up...")
-        while el_sec < 30:
-            time.sleep(0.5)
+        for _ in range(15): 
+            time.sleep(1)
             el_sec += 1
         self.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
         if conf.serial:
@@ -222,44 +222,48 @@ class Sensors:
     # Sensor initialization
     ############################
     def AQI_CO2(self,c):
+        h = 0x000000  # Default/error color (e.g., black)
+        i = 0       # Default/error AQI category
         if c <= 400:
             i = 1
-            h = 0x00e408
-        if c > 400 and c <= 1000:
+            h = 0x00e408  # Green
+        elif c <= 1000: # c > 400 is implied
             i = 2
-            h = 0xffff00
-        if c > 1000 and c <= 1500:
+            h = 0xffff00  # Yellow
+        elif c <= 1500:
             i = 3
-            h = 0xff8000
-        if c > 1500 and c <= 2000:
+            h = 0xff8000  # Orange
+        elif c <= 2000:
             i = 4
-            h = 0xff0000
-        if c > 2000 and c <= 5000:
+            h = 0xff0000  # Red
+        elif c <= 5000:
             i = 5
-            h = 0x903f97
-        if c > 5000:
+            h = 0x903f97  # Purple
+        else:  # c > 5000
             i = 6
-            h = 0x7e0023
+            h = 0x7e0023  # Maroon
         self.disp.rect1_palette[0] = h
         return i
 
     def AQI_TVOC(self,c):
+        h = 0x000000  # Default/error color (e.g., black)
+        i = 0       # Default/error AQI category
         if c <= 50:
             i = 1
             h = 0x00e408
-        if c > 50 and c <= 100:
+        elif c > 50 and c <= 100:
             i = 2
             h = 0xffff00
-        if c > 100 and c <= 150:
+        elif c > 100 and c <= 150:
             i = 3
             h = 0xff8000
-        if c > 150 and c <= 200:
+        elif c > 150 and c <= 200:
             i = 4
             h = 0xff0000
-        if c > 200 and c <= 300:
+        elif c > 200 and c <= 300:
             i = 5
             h = 0x903f97
-        if c > 300:
+        else: # c > 300
             i = 6
             h = 0x7e0023
         self.disp.rect2_palette[0] = h
@@ -279,6 +283,8 @@ def main():
         celsius = sens.bme280.temperature
         RH = sens.bme280.relative_humidity
         sens.sgp30.set_iaq_relative_humidity(celsius=celsius, relative_humidity=RH)
+        aqi_co2_val = sens.AQI_CO2(sens.sgp30.eCO2) # Sets color and returns index
+        aqi_tvoc_val = sens.AQI_TVOC(sens.sgp30.TVOC)
         if conf.serial:
             print("\n Temperature: %0.1fC (%0.1fC)" % (celsius, float(sens.nws[0])))
             print(" Humidity: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1])))
@@ -286,7 +292,7 @@ def main():
             print(" Altitude = %0.2f meters" % sens.bme280.altitude)
             print(" eCO2 = %d ppm" % sens.sgp30.eCO2)
             print(" TVOC = %d ppb" % sens.sgp30.TVOC)
-            print(" AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC)))
+            print(" AQI-CO2: %d  AQI-TVOC: %d"  % (aqi_co2_val, aqi_tvoc_val))
             print("**** Baseline values: eCO2 = 0x%x, TVOC = 0x%x" % (sens.sgp30.baseline_eCO2,
                 sens.sgp30.baseline_TVOC))
 
@@ -294,7 +300,7 @@ def main():
         disp.labels[1].text = "RH: %0.1f%% (%0.1f%%)" % (RH, float(sens.nws[1]))
         disp.labels[2].text = "eCO2 = %d ppm" % sens.sgp30.eCO2
         disp.labels[3].text = "TVOC = %d ppb" % sens.sgp30.TVOC
-        disp.labels[4].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (sens.AQI_CO2(sens.sgp30.eCO2), sens.AQI_TVOC(sens.sgp30.TVOC))
+        disp.labels[4].text = "AQI-CO2: %d  AQI-TVOC: %d"  % (aqi_co2_val, aqi_tvoc_val)
         disp.labels[5].text = "Pressure: %0.1f hPa" % sens.bme280.pressure
         disp.labels[6].text = "Altitude = %0.2f meters" % sens.bme280.altitude
         disp.labels[7].text = "eCO2: 0x%x TVOC:0x%x" % (sens.sgp30.baseline_eCO2, sens.sgp30.baseline_TVOC)

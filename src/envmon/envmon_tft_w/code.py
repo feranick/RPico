@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2025.03.26.1
+# * v2025.06.03.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -38,30 +38,42 @@ class Conf:
             self.co2eq_base = os.getenv("co2eq_base")
             self.tvoc_base = os.getenv("tvoc_base")
             self.serial = bool(os.getenv("serial"))
-        except:
+        except KeyError: # If a key is not in os.environ (e.g. missing in settings.toml)
+            print("A required setting was not found in settings.toml, using defaults.")
             self.station = "kbos"
             self.co2eq_base = 0xfea3
             self.tvoc_base = 0xff19
             self.serial = True
+        except Exception as e:
+            print(f"Error reading settings: {e}")
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
         self.user_agent = "(feranick, feranick@hotmail.com)"
         self.headers = {'Accept': 'application/geo+json',
             'User-Agent' : self.user_agent}
-        try:
-            wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'),
-            os.getenv('CIRCUITPY_WIFI_PASSWORD'))
-            time.sleep(0.5)
-            pool = socketpool.SocketPool(wifi.radio)
-            self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
-            self.ip = str(wifi.radio.ipv4_address)
-            time.sleep(2)
-        except RuntimeError as err:
-            print(err,"\n Restarting...")
-            time.sleep(2)
-            import microcontroller
-            microcontroller.reset()
-            print(err)
+        wifi_connected = False
+        for attempt in range(3): # Try 3 times
+            try:
+                wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), os.getenv('CIRCUITPY_WIFI_PASSWORD'))
+                time.sleep(0.5) # Allow DHCP to work
+                pool = socketpool.SocketPool(wifi.radio)
+                self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
+                self.ip = str(wifi.radio.ipv4_address)
+                print(f"Connected to Wi-Fi. IP: {self.ip}")
+                wifi_connected = True
+                break # Exit loop on success
+            except RuntimeError as err:
+                print(f"Wi-Fi connection attempt {attempt + 1} failed: {err}")
+                time.sleep(5) # Wait before retrying
+            except OSError as err: # Can happen if SSID not found
+                print(f"Wi-Fi OS error attempt {attempt + 1} failed: {err}")
+                time.sleep(5)
+
+        if not wifi_connected:
+            print("Failed to connect to Wi-Fi after multiple attempts. Continuing in offline mode.")
+            self.requests = None # Indicate that network requests should not be made
+            self.ip = "N/A"
+            # Optionally: microcontroller.reset() if online is critical
 
     ############################
     # Retrieve NVS data
@@ -71,9 +83,11 @@ class Conf:
         data = []
         try:
             self.r = self.requests.get(self.url, headers=self.headers)
-            raw = [self.r.json()['properties']['temperature']['value'],
-                self.r.json()['properties']['relativeHumidity']['value'],
-                self.r.json()['properties']['seaLevelPressure']['value']]
+            self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            response_json = self.r.json()
+            raw = [response_json['properties']['temperature']['value'],
+                response_json['properties']['relativeHumidity']['value'],
+                response_json['properties']['seaLevelPressure']['value']]
             for i in range(len(raw)):
                 if raw[i] is None:
                     data.append(default[i])
@@ -81,13 +95,21 @@ class Conf:
                     data.append(float(raw[i]))
             self.r.close()
             return data
-        except:
+        except adafruit_requests.OutOfRetries:
+            print("NWS: Too many retries (likely network issue)")
             return default
-        #except Exception as e:
-        #    print("Error:\n", str(e))
-        #    print("Resetting microcontroller in 10 seconds")
-        #    time.sleep(10)
-        #    microcontroller.reset()
+        except RuntimeError as e: # Covers socket errors, etc.
+            print(f"NWS: Network error: {e}")
+            return default
+        except (KeyError, TypeError, ValueError) as e: # Problems with JSON structure or content
+            print(f"NWS: Error parsing data: {e}")
+            return default
+        except Exception as e:
+            print(f"NWS: An unexpected error occurred: {e}")
+            return default
+        finally:
+            if hasattr(self, 'r') and self.r:
+                self.r.close()
 
 ############################
 # TFT initialization

@@ -1,0 +1,2 @@
+CO2EQ_BASE = 0xfeb9 
+TVOC_BASE = 0xff17

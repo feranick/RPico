@@ -1,7 +1,7 @@
 
 # **********************************************
 # * Environmental Monitor TFT - Rasperry Pico W
-# * v2025.06.03.1
+# * v2025.06.03.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -35,24 +35,22 @@ class Conf:
     def __init__(self):
         try:
             self.station = os.getenv("station")
-            self.co2eq_base = os.getenv("co2eq_base")
-            self.tvoc_base = os.getenv("tvoc_base")
             self.serial = bool(os.getenv("serial"))
         except KeyError: # If a key is not in os.environ (e.g. missing in settings.toml)
             print("A required setting was not found in settings.toml, using defaults.")
             self.station = "kbos"
-            self.co2eq_base = 0xfea3
-            self.tvoc_base = 0xff19
             self.serial = True
         except Exception as e:
             print(f"Error reading settings: {e}")
+
+        self.loadBaseline()
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
         self.user_agent = "(feranick, feranick@hotmail.com)"
         self.headers = {'Accept': 'application/geo+json',
             'User-Agent' : self.user_agent}
         wifi_connected = False
-        for attempt in range(3): # Try 3 times
+        for attempt in range(3):
             try:
                 wifi.radio.connect(os.getenv('CIRCUITPY_WIFI_SSID'), os.getenv('CIRCUITPY_WIFI_PASSWORD'))
                 time.sleep(0.5) # Allow DHCP to work
@@ -75,6 +73,31 @@ class Conf:
             self.ip = "N/A"
             # Optionally: microcontroller.reset() if online is critical
 
+    def loadBaseline(self):
+        try:
+            with open("/sgp30_baselines.txt", "r") as f:
+                lines = f.readlines()
+                for line in lines:
+                    name, value = line.strip().split('=')
+                if name == "CO2EQ_BASE":
+                    self.co2eq_base = int(value, 16)
+                elif name == "TVOC_BASE":
+                    self.tvoc_base = int(value, 16)
+            print("Loaded SGP30 baselines from /sgp30_baselines.txt")
+        except (OSError, ValueError): # File not found, or content error
+            print("No SGP30 baselines file found or error reading, trying config defaults/env.")
+
+            self.co2eq_base = os.getenv("co2eq_base")
+            self.tvoc_base = os.getenv("tvoc_base")
+            if self.co2eq_base is not None and self.tvoc_base is not None:
+                print("Loaded SGP30 baselines from settings.toml")
+            else:
+                print("No SGP30 baselines file found or error reading, using hardcoded defaults")
+                self.co2eq_base = 0xfea3
+                self.tvoc_base = 0xff19
+                #self.co2eq_base = int(os.getenv("co2eq_base", "0xfea3"), 16)
+                #self.tvoc_base = int(os.getenv("tvoc_base", "0xff19"), 16)
+
     ############################
     # Retrieve NVS data
     ############################
@@ -83,7 +106,7 @@ class Conf:
         data = []
         try:
             self.r = self.requests.get(self.url, headers=self.headers)
-            self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            #self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
             response_json = self.r.json()
             raw = [response_json['properties']['temperature']['value'],
                 response_json['properties']['relativeHumidity']['value'],
@@ -197,7 +220,7 @@ class Sensors:
         el_sec = 0
         if conf.serial:
             print("SGP30 sensor Warming up...")
-        for _ in range(15): 
+        for _ in range(15):
             time.sleep(1)
             el_sec += 1
         self.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
@@ -269,6 +292,25 @@ class Sensors:
         self.disp.rect2_palette[0] = h
         return i
 
+    def saveBaseline(self, conf):
+        new_co2_base = self.sgp30.baseline_eCO2
+        new_tvoc_base = self.sgp30.baseline_TVOC
+        if conf.co2eq_base != new_co2_base or conf.tvoc_base != new_tvoc_base:
+            conf.co2eq_base = new_co2_base
+            conf.tvoc_base = new_tvoc_base
+            try:
+                with open("/sgp30_baselines.txt", "w") as f:
+                    f.write(f"CO2EQ_BASE={hex(conf.co2eq_base)}\n")
+                    f.write(f"TVOC_BASE={hex(conf.tvoc_base)}\n")
+                if conf.serial:
+                    print("**** Successfully saved new baselines to /sgp30_baselines.txt")
+            except OSError as e:
+                if conf.serial:
+                    print(f"**** Failed to save baselines: {e}")
+     # The set_iaq_baseline call here is not strictly necessary if the sensor is continuously powered
+     # as it's already using these baselines. It doesn't hurt, though.
+     # sens.sgp30.set_iaq_baseline(conf.co2eq_base, conf.tvoc_base)
+
 ############################
 # Main
 ############################
@@ -308,8 +350,9 @@ def main():
 
         # Set baseline
         elapsed_sec += 1
-        if elapsed_sec > 3600:
+        if elapsed_sec > 20:
             sens.nws = conf.get_nws_data()
+            sens.saveBaseline(conf)
             elapsed_sec = 0
             conf.co2eq_base = sens.sgp30.baseline_eCO2
             conf.tvoc_base = sens.sgp30.baseline_TVOC
@@ -319,5 +362,5 @@ def main():
             sens.bme280.sea_level_pressure = sens.nws[2]/100
 
         time.sleep(0.5)
-        
+
 main()

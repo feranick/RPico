@@ -42,7 +42,7 @@ class Conf:
             self.serial = True
         except Exception as e:
             print(f"Error reading settings: {e}")
-
+            
         self.loadBaseline()
 
         self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
@@ -72,21 +72,20 @@ class Conf:
             self.requests = None # Indicate that network requests should not be made
             self.ip = "N/A"
             # Optionally: microcontroller.reset() if online is critical
-
+            
     def loadBaseline(self):
         try:
             with open("/sgp30_baselines.txt", "r") as f:
                 lines = f.readlines()
                 for line in lines:
                     name, value = line.strip().split('=')
-                if name == "CO2EQ_BASE":
-                    self.co2eq_base = int(value, 16)
-                elif name == "TVOC_BASE":
-                    self.tvoc_base = int(value, 16)
+                    if name == "CO2EQ_BASE":
+                        self.co2eq_base = int(value,16)
+                    elif name == "TVOC_BASE":
+                        self.tvoc_base = int(value, 16)
             print("Loaded SGP30 baselines from /sgp30_baselines.txt")
         except (OSError, ValueError): # File not found, or content error
             print("No SGP30 baselines file found or error reading, trying config defaults/env.")
-
             self.co2eq_base = os.getenv("co2eq_base")
             self.tvoc_base = os.getenv("tvoc_base")
             if self.co2eq_base is not None and self.tvoc_base is not None:
@@ -291,7 +290,7 @@ class Sensors:
             h = 0x7e0023
         self.disp.rect2_palette[0] = h
         return i
-
+            
     def saveBaseline(self, conf):
         new_co2_base = self.sgp30.baseline_eCO2
         new_tvoc_base = self.sgp30.baseline_TVOC

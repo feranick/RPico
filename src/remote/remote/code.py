@@ -216,14 +216,26 @@ class Control:
 ############################
 class Sensors:
     def __init__(self, conf):
+        self.sonar = None
+        self.mcp = None
+        try:
+            self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
+        except Exception as e:
+            print(f"Failed to initialize HCSR04: {e}")
+        try:
+            self.mcp = adafruit_mcp9808.MCP9808(i2c)
+        except Exception as e:
+            print(f"Failed to initialize MCP9808: {e}")    
+            
         self.trigDist = conf.triggerDistance
-        self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
         i2c = busio.I2C(board.GP1, board.GP0)
-        self.mcp = adafruit_mcp9808.MCP9808(i2c)
         self.numTimes = 1
         self.avDeltaT = 0
 
     def checkStatusSonar(self):
+        if not self.sonar:
+            print("Sonar not initialized.")
+            return "N/A"
         nt = 0
         while nt < 2:
             try:
@@ -244,6 +256,13 @@ class Sensors:
 
     def getTemperature(self):
         t_cpu = microcontroller.cpu.temperature
+        if not self.mcp:
+            print("MCP9808 not initialized. Using CPU temp with estimated offset.")
+            # Use self.avDeltaT only if it has been meaningfully calculated
+            if self.numTimes > 1 and self.avDeltaT != 0 : # Check if avDeltaT has been updated
+                return f"{round(t_cpu - self.avDeltaT, 1)} C (CPU adj.)"
+            else:
+                return f"{round(t_cpu, 1)} C (CPU raw)"
         try:
             t_mcp = self.mcp.temperature
             delta_t = t_cpu - t_mcp

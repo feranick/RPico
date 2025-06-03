@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2024.03.15.1
+# * v2025.06.03.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -25,10 +25,15 @@ supervisor.set_next_code_file(filename='code.py', reload_on_error=True)
 ############################
 class Conf:
     def __init__(self):
+        self.triggerDistance = 20.0 # Default to float
         try:
-            self.triggerDistance = float(os.getenv("trigDistance"))
-        except:
-            self.triggerDistance = 20
+            trig_dist_env = os.getenv("trigDistance")
+            if trig_dist_env is not None:
+                self.triggerDistance = float(trig_dist_env)
+            else:
+                print("Warning: 'trigDistance' not found in settings.toml. Using default.")
+        except ValueError:
+            print(f"Warning: Invalid trigDistance '{trig_dist_env}' in settings.toml. Using default.")
 
 ############################
 # Server
@@ -152,7 +157,7 @@ class Server:
         </form>
         <br>Temperature: {temperature}
         <br><br><small><small>{self.getDateTime()}</small></small>
-        <br><small><small>Device IP: {self.ip}</p></small></small>
+        <br><small><small>Device IP: {self.ip}</small></small>
         </body>
         </html>
         """
@@ -273,7 +278,7 @@ def main():
         if request == "/run?":
             print("Run Control")
             control.runControl()
-            time.sleep(10)
+            #time.sleep(10)
 
         state = sensors.checkStatusSonar()
         html = server.webpage(state, control.setLabel(state), sensors.getTemperature())

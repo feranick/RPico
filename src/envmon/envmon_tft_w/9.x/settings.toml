@@ -1,0 +1,10 @@
+CIRCUITPY_WIFI_SSID = "BudSpencer"
+CIRCUITPY_WIFI_PASSWORD = "Pennstate123"
+CIRCUITPY_WEB_INSTANCE_NAME = "EnvMon"
+CIRCUITPY_WEB_API_PASSWORD="passw0rd"
+CIRCUITPY_WEB_API_PORT=205
+serial = 1
+station = "kbos"
+co2eq_base = 0xfea3
+tvoc_base = 0xff19
+

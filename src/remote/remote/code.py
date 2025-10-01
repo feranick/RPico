@@ -206,17 +206,25 @@ class GarageServer:
                 return Response(request, "File Not Found. Check console.")
 
     def serve_forever(self):
-        """Modified main loop to handle server requests."""
         while True:
             if not wifi.radio.connected:
                 print("WiFi connection lost. Rebooting...")
                 self.reboot()
-
+                
             try:
                 self.server.poll()
+            except (BrokenPipeError, ConnectionResetError, OSError) as e:
+                # BrokenPipeError (32) and ConnectionResetError are normal when a client closes the window
+                if isinstance(e, OSError) and e.args[0] not in (32, 104):
+                    print(f"Error in server poll: {e}")
+                elif isinstance(e, (BrokenPipeError, ConnectionResetError)):
+                    pass # Ignore
+                else:
+                    print(f"Error in server poll: {e}")
             except Exception as e:
-                print(f"Error in server poll: {e}")
-
+                # Catch all other unexpected errors
+                print(f"Unexpected error in server poll: {e}")
+                
             time.sleep(0.01)
 
     def setup_ntp(self):

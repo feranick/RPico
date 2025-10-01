@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Pico Garage Opener</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="manifest" href='data:application/manifest+json,{ "name": "Pico Garage Opener",
+    "short_name": "Pico Garage Opener",
+    "description": "Pico Garage Opener",
+    "start_url": ".",
+    "display": "standalone",
+    }' />
+</head>
+<body>
+<style type="text/css">
+#Submit {
+/*
+  The background-color style below must be set by JavaScript now
+  background-color: {label[1]};
+*/
+color: white;
+font-size: 20px;
+font-weight: bold;
+margin: 70px;
+margin-top: 10px;
+height: 200px;
+width: 250px;
+position: center;
+text-align: center;
+border-width: 4px 4px;
+position:center;
+right:0px;
+padding: 0px;}
+#Status {
+font-size: 20px;
+font-weight: bold;
+margin: 70px;
+margin-top: 10px;
+height: 100px;
+width: 250px;
+position: center;
+text-align: center;
+border-width: 4px 4px;
+position:center;
+right:0px;
+padding: 0px;}
+body{
+margin: 5px;
+font-family: Helvetica;
+text-align: center;
+min-height: 30px;
+width: 100%;
+background-position: center top;
+text-align: center;
+font-size: 20px;
+padding: 11px 0px 12px 0px;
+font-weight: bold;}
+.hidden{display: none;}
+.show{display: block;}
+.done{opacity:0.2;}
+.notdone{opacity:1;}
+</style>
+
+<script language="javascript" >
+function waitWarn(a) {
+    // Send request via fetch instead of form submit to prevent full page reload
+    document.getElementById("warnLabel").innerHTML = "Please wait...";
+    document.getElementById("Submit").disabled = true;
+    document.getElementById("Status").disabled = true;
+
+    if (a === 0) {
+        // Handle "Run Control" click
+        fetch('./run') // Use fetch for the run command
+            .then(response => {
+                if (response.ok) {
+                    console.log("Run control successful.");
+                    // Immediately request an update after sending the command
+                    // Add a small delay for the physical action to start/stop
+                    setTimeout(updateStatus, 1000); 
+                } else {
+                    throw new Error('Run command failed.');
+                }
+            })
+            .catch(error => {
+                console.error('Run Error:', error);
+                document.getElementById("warnLabel").textContent = "Error during RUN.";
+                updateStatus(); // Re-enable buttons
+            });
+    } else if (a === 1) {
+        // Handle "Update Status" click
+        updateStatus();
+    }
+}
+
+function updateStatus() {
+    fetch('/api/status')
+    .then(response => response.json())
+    .then(data => {
+        
+        let submitButton = document.getElementById("Submit");
+        
+        // 1. Update Door Status
+        document.getElementById("door_status").textContent = "Door is " + data.state;
+        
+        // 2. Update Submit Button
+        submitButton.value = data.button_text;
+        submitButton.style.backgroundColor = data.button_color;
+        
+        // 3. Update Temperature
+        document.getElementById("temp_display").textContent = "Temperature: " + data.temperature;
+        
+        // 4. Update Time and IP
+        document.getElementById("datetime").textContent = data.datetime;
+        document.getElementById("ip_address").textContent = "Device IP: " + data.ip;
+        
+        // 5. Reset Warning and buttons
+        document.getElementById("warnLabel").textContent = "Ready"; 
+        submitButton.disabled = false;
+        document.getElementById("Status").disabled = false;
+    })
+    .catch(error => {
+        console.error('Error fetching status:', error);
+        document.getElementById("warnLabel").textContent = "Error: Check connection.";
+        // Re-enable buttons even on error, so user can try again
+        document.getElementById("Submit").disabled = false;
+        document.getElementById("Status").disabled = false;
+    });
+}
+
+// Start the status update when the page is fully loaded
+document.addEventListener('DOMContentLoaded', updateStatus);
+// Optionally, update status every 10 seconds automatically
+setInterval(updateStatus, 10000); 
+</script>
+
+<form name="submitForm">
+    <input type="button" id="Submit" value="Loading..." onclick="waitWarn(0)" />
+</form>
+
+<span id="door_status">Door is Loading...</span>
+
+<form name="statusForm">
+    <input type="button" id="Status" value="Update Status" onclick="waitWarn(1)" />
+    <br><label id="warnLabel">Ready</label>
+</form>
+
+<br><span id="temp_display">Temperature: Loading...</span>
+
+<br><br><small><small><span id="datetime">Time N/A</span></small></small>
+<br><small><small><span id="ip_address">Device IP: N/A</span></small></small>
+<br><small><small>Version 2025.10.01.1</small></small>
+</body>
+</html>

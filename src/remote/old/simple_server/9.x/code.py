@@ -213,6 +213,7 @@ class Server:
         <br>Temperature: {temperature}
         <br><br><small><small>{self.getDateTime()}</small></small>
         <br><small><small>Device IP: {self.ip}</small></small>
+        <br><small><small>Version 2025.09.30.1</small></small>
         </body>
         </html>
         """

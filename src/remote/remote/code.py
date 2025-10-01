@@ -19,7 +19,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 
 # Import the necessary modules.
-from adafruit_httpserver import Server, MIMETypes, Response 
+from adafruit_httpserver import Server, MIMETypes, Response
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -90,7 +90,7 @@ class GarageServer:
         password = os.getenv('CIRCUITPY_WIFI_PASSWORD')
         if ssid is None or password is None:
             raise RuntimeError("WiFi credentials not found.")
-            
+
         MAX_WIFI_ATTEMPTS = 5
         attempt_count = 0
         time.sleep(5)
@@ -108,7 +108,7 @@ class GarageServer:
                 print(f"WiFi other connect error: {e}")
                 time.sleep(3)
             attempt_count += 1
-        
+
         if wifi.radio.connected:
             self.ip = str(wifi.radio.ipv4_address)
             print("WiFi Connected!")
@@ -117,10 +117,10 @@ class GarageServer:
 
     def setup_server(self):
         pool = socketpool.SocketPool(wifi.radio)
-        self.server = Server(pool, debug=True) 
-        
+        self.server = Server(pool, debug=True)
+
         # --- Routes ---
-        
+
         # Root Route: Serves static/index.html
         @self.server.route("/")
         def base_route(request):
@@ -139,7 +139,7 @@ class GarageServer:
         def update_status(request):
             # Use simplified Response for 200 OK
             return Response(request, "OK")
-            
+
         # JSON API to get status and other data
         @self.server.route("/api/status")
         def api_status(request):
@@ -147,7 +147,7 @@ class GarageServer:
             label = self.control.setLabel(state)
             temperature = self.sensors.getTemperature()
             date_time = self.getDateTime()
-            
+
             json_content = '{' + \
                 '"state":"' + state + '",' + \
                 '"button_text":"' + label[0] + '",' + \
@@ -156,34 +156,54 @@ class GarageServer:
                 '"datetime":"' + date_time + '",' + \
                 '"ip":"' + self.ip + '"' + \
                 '}'
-            
+
             headers = {"Content-Type": "application/json"}
-            
+
             # Return the response using the compatible Response constructor
             return Response(request, json_content, headers=headers)
+
+        @self.server.route("/favicon.ico")
+        def favicon_route(request):
+            return self._serve_static_file(request, 'static/favicon.ico', content_type="image/x-icon")
+
+        # If using a PNG for an app icon:
+        @self.server.route("/icon192.png")
+        def icon_route(request):
+            return self._serve_static_file(request, 'static/icon192.png', content_type="image/png")
+            
+        @self.server.route("/icon.png")
+        def icon_route(request):
+            return self._serve_static_file(request, 'static/icon.png', content_type="image/png")
 
         # Start the server
         self.server.start(host=self.ip, port=80)
 
-    def _serve_static_file(self, request, filepath):
-        """Manually reads a file and returns an HTTP response."""
+    def _serve_static_file(self, request, filepath, content_type="text/html"):
+        """Manually reads a file and returns an HTTP response with a customizable content type."""
+        
+        # Determine if the file should be read in binary mode
+        is_binary = filepath.endswith(('.ico', '.png'))
+        mode = "rb" if is_binary else "r"
+        encoding = None if is_binary else 'utf-8'
+        
         try:
-            with open(filepath, "r", encoding='utf-8') as f:
+            with open(filepath, mode, encoding=encoding) as f:
                 content = f.read()
             
-            headers = {"Content-Type": "text/html"}
-            # Assumes 200 OK is default
+            headers = {"Content-Type": content_type}
+            
+            # The Response object handles both text (str) and binary (bytes) content
             return Response(request, content, headers=headers)
+            
         except OSError as e:
+            # Handle File Not Found or other OS errors
             print(f"Error opening or reading file {filepath}: {e}")
             try:
-                # Try passing status as a positional argument (4th argument)
+                # The response content here should be simple text
                 return Response(request, "File Not Found", {}, 404)
             except Exception as e2:
-                # Fallback to a simple 200 OK response with the error
                 print(f"Could not set 404 status: {e2}")
                 return Response(request, "File Not Found. Check console.")
-
 
     def serve_forever(self):
         """Modified main loop to handle server requests."""
@@ -191,12 +211,12 @@ class GarageServer:
             if not wifi.radio.connected:
                 print("WiFi connection lost. Rebooting...")
                 self.reboot()
-                
+
             try:
                 self.server.poll()
             except Exception as e:
                 print(f"Error in server poll: {e}")
-                
+
             time.sleep(0.01)
 
     def setup_ntp(self):
@@ -261,7 +281,7 @@ class Sensors:
             self.avDeltaT = 0
             print(f"Failed to initialize MCP9808: {e}")
         self.numTimes = 1
-        
+
 
     def checkStatusSonar(self):
         if not self.sonar:

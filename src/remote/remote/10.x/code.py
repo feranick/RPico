@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.06.03.1
+# * v2025.09.30.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -138,6 +138,7 @@ class Server:
         <title>Pico Garage Opener</title>
         <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, minimum-scale=1.0, user-scalable=0" />
         <meta name="mobile-web-app-capable" content="yes" />
+        <link rel="manifest" href='data:application/manifest+json,{ "name": "Pico Garage Opener", "short_name": "PicoGarageOpener", "description": "Pico Garage Opener", "start_url": ".", "display": "standalone" }' />
         </head>
         <body>
         <style type="text/css">

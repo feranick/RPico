@@ -214,16 +214,15 @@ class GarageServer:
             try:
                 self.server.poll()
             except (BrokenPipeError, ConnectionResetError, OSError) as e:
-                # BrokenPipeError (32) and ConnectionResetError are normal when a client closes the window
                 if isinstance(e, OSError) and e.args[0] not in (32, 104):
-                    print(f"Error in server poll: {e}")
+                    print(f"Unexpected OSError in server poll: {e}")
                 elif isinstance(e, (BrokenPipeError, ConnectionResetError)):
-                    pass # Ignore
+                    pass
                 else:
                     print(f"Error in server poll: {e}")
+            
             except Exception as e:
-                # Catch all other unexpected errors
-                print(f"Unexpected error in server poll: {e}")
+                print(f"Unexpected critical error in server poll: {e}")
                 
             time.sleep(0.01)
 

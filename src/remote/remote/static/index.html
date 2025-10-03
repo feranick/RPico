@@ -103,9 +103,10 @@ function updateStatus() {
         // 3. Update Temperature
         document.getElementById("temp_display").textContent = "Temperature: " + data.temperature;
         
-        // 4. Update Time and IP
+        // 4. Update Time, IP and version
         document.getElementById("datetime").textContent = data.datetime;
         document.getElementById("ip_address").textContent = "Device IP: " + data.ip;
+        document.getElementById("version").textContent = "Version: " + data.version;
         
         // 5. Reset Warning and buttons
         document.getElementById("warnLabel").textContent = "Ready"; 
@@ -142,6 +143,6 @@ setInterval(updateStatus, 10000);
 
 <br><br><small><small><span id="datetime">Time N/A</span></small></small>
 <br><small><small><span id="ip_address">Device IP: N/A</span></small></small>
-<br><small><small>Version 2025.10.01.1</small></small>
+<br><small><small><span id="version">Version: N/A</span></small></small>
 </body>
 </html>

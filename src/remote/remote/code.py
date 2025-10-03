@@ -21,6 +21,8 @@ import adafruit_mcp9808
 # Import the necessary modules.
 from adafruit_httpserver import Server, MIMETypes, Response
 
+version = "2025.10.03.1"
+
 ############################
 # Initial WiFi/Safe Mode Check
 ############################
@@ -154,8 +156,10 @@ class GarageServer:
                 '"button_color":"' + label[1] + '",' + \
                 '"temperature":"' + temperature + '",' + \
                 '"datetime":"' + date_time + '",' + \
-                '"ip":"' + self.ip + '"' + \
+                '"ip":"' + self.ip + '",' + \
+                '"version":"' + version + '"' + \
                 '}'
+            print(json_content)
 
             headers = {"Content-Type": "application/json"}
 

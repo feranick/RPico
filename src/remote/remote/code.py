@@ -180,7 +180,6 @@ class GarageServer:
                 '"ext_RH":"{:.1f} %",'.format(nws[1]) + \
                 '"version":"' + version + '"' + \
                 '}'
-            print(json_content)
 
             headers = {"Content-Type": "application/json"}
 

@@ -94,21 +94,26 @@ function updateStatus() {
         let submitButton = document.getElementById("Submit");
         
         // 1. Update Door Status
-        document.getElementById("door_status").textContent = "Door is " + data.state;
+        document.getElementById("door_status").textContent = data.state;
         
         // 2. Update Submit Button
         submitButton.value = data.button_text;
         submitButton.style.backgroundColor = data.button_color;
         
-        // 3. Update Temperature
-        document.getElementById("temp_display").textContent = "Temperature: " + data.temperature;
+        // 3. Update onboard Temperature
+        document.getElementById("temp_display").textContent = data.temperature;
         
-        // 4. Update Time, IP and version
+        // 4. Update station, external temperature and relative humidity
+        document.getElementById("station").textContent = data.station;
+        document.getElementById("ext_temperature").textContent = data.ext_temperature;
+        document.getElementById("ext_RH").textContent = data.ext_RH;
+        
+        // 5. Update Time, IP and version
         document.getElementById("datetime").textContent = data.datetime;
-        document.getElementById("ip_address").textContent = "Device IP: " + data.ip;
-        document.getElementById("version").textContent = "Version: " + data.version;
+        document.getElementById("ip_address").textContent = data.ip;
+        document.getElementById("version").textContent = data.version;
         
-        // 5. Reset Warning and buttons
+        // 6. Reset Warning and buttons
         document.getElementById("warnLabel").textContent = "Ready"; 
         submitButton.disabled = false;
         document.getElementById("Status").disabled = false;
@@ -132,17 +137,21 @@ setInterval(updateStatus, 10000);
     <input type="button" id="Submit" value="Loading..." onclick="waitWarn(0)" />
 </form>
 
-<span id="door_status">Door is Loading...</span>
+Door status is: <span id="door_status">Loading...</span>
 
 <form name="statusForm">
     <input type="button" id="Status" value="Update Status" onclick="waitWarn(1)" />
     <br><label id="warnLabel">Ready</label>
 </form>
 
-<br><span id="temp_display">Temperature: Loading...</span>
+<br>Indoor Temperature: <span id="temp_display">Loading...</span>
+<br>
+<br>Temperature: <span id="ext_temperature">Loading...</span>
+<br>Relative Humidity: <span id="ext_RH">Loading...</span>
+<br><small><br>Weather station: <span id="station">Loading...</span>
+<br><span id="datetime">Time N/A</span></small>
 
-<br><br><small><small><span id="datetime">Time N/A</span></small></small>
-<br><small><small><span id="ip_address">Device IP: N/A</span></small></small>
-<br><small><small><span id="version">Version: N/A</span></small></small>
+<br><br><small><small>Device IP: <span id="ip_address">N/A</span></small></small>
+<br><small><small>Version: <span id="version">Version: N/A</span></small></small>
 </body>
 </html>

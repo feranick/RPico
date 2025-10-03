@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.01.1
+# * v2025.10.03.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -13,7 +13,9 @@ import busio
 import board
 import digitalio
 import socketpool
+import ssl
 from adafruit_datetime import datetime
+import adafruit_requests
 import adafruit_ntp
 import adafruit_hcsr04
 import adafruit_mcp9808
@@ -58,17 +60,31 @@ class Conf:
                 print("Warning: 'triggerDistance' not found in settings.toml. Using default.")
         except ValueError:
             print(f"Warning: Invalid triggerDistance '{trig_dist_env}' in settings.toml. Using default.")
-
+            
 ############################
 # Server
 ############################
 class GarageServer:
-    def __init__(self, control, sensors):
+    def __init__(self, control, sensors):            
+        try:
+            self.station = os.getenv("station")
+            self.serial = bool(os.getenv("serial"))
+        except KeyError: # If a key is not in os.environ (e.g. missing in settings.toml)
+            print("A required setting was not found in settings.toml, using defaults.")
+            self.station = "kbos"
+            self.serial = True
+        except Exception as e:
+            print(f"Error reading settings: {e}")
+            
         self.control = control
         self.sensors = sensors
         self.ntp = None
         self.server = None
         self.ip = "0.0.0.0"
+        self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
+        self.user_agent = "(feranick, feranick@hotmail.com)"
+        self.headers = {'Accept': 'application/geo+json',
+            'User-Agent' : self.user_agent}
 
         try:
             self.connect_wifi()
@@ -120,6 +136,7 @@ class GarageServer:
     def setup_server(self):
         pool = socketpool.SocketPool(wifi.radio)
         self.server = Server(pool, debug=True)
+        self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
         # --- Routes ---
 
@@ -149,6 +166,7 @@ class GarageServer:
             label = self.control.setLabel(state)
             temperature = self.sensors.getTemperature()
             date_time = self.getDateTime()
+            nws = self.get_nws_data()
 
             json_content = '{' + \
                 '"state":"' + state + '",' + \
@@ -157,6 +175,9 @@ class GarageServer:
                 '"temperature":"' + temperature + '",' + \
                 '"datetime":"' + date_time + '",' + \
                 '"ip":"' + self.ip + '",' + \
+                '"station":"' + self.station + '",' + \
+                '"ext_temperature":"' + str(nws[0]) + ' C",' + \
+                '"ext_RH":"{:.1f} %",'.format(nws[1]) + \
                 '"version":"' + version + '"' + \
                 '}'
             print(json_content)
@@ -246,6 +267,42 @@ class GarageServer:
                 print(f"Error converting NTP time: {e}")
                 return "Time N/A"
         return "Time N/A"
+        
+    ############################
+    # Retrieve NVS data
+    ############################
+    def get_nws_data(self):
+        default = [0,0,102000]
+        data = []
+        try:
+            self.r = self.requests.get(self.url, headers=self.headers)
+            #self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            response_json = self.r.json()
+            raw = [response_json['properties']['temperature']['value'],
+                response_json['properties']['relativeHumidity']['value'],
+                response_json['properties']['seaLevelPressure']['value']]
+            for i in range(len(raw)):
+                if raw[i] is None:
+                    data.append(default[i])
+                else:
+                    data.append(float(raw[i]))
+            self.r.close()
+            return data
+        except adafruit_requests.OutOfRetries:
+            print("NWS: Too many retries (likely network issue)")
+            return default
+        except RuntimeError as e: # Covers socket errors, etc.
+            print(f"NWS: Network error: {e}")
+            return default
+        except (KeyError, TypeError, ValueError) as e: # Problems with JSON structure or content
+            print(f"NWS: Error parsing data: {e}")
+            return default
+        except Exception as e:
+            print(f"NWS: An unexpected error occurred: {e}")
+            return default
+        finally:
+            if hasattr(self, 'r') and self.r:
+                self.r.close()
 
 ############################
 # Control, Sensors, and Main

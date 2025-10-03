@@ -213,14 +213,11 @@ class GarageServer:
                 
             try:
                 self.server.poll()
-            except (BrokenPipeError, ConnectionResetError, OSError) as e:
+            except (BrokenPipeError, OSError) as e:
                 if isinstance(e, OSError) and e.args[0] not in (32, 104):
                     print(f"Unexpected OSError in server poll: {e}")
-                elif isinstance(e, (BrokenPipeError, ConnectionResetError)):
+                elif isinstance(e, BrokenPipeError):
                     pass
-                else:
-                    print(f"Error in server poll: {e}")
-            
             except Exception as e:
                 print(f"Unexpected critical error in server poll: {e}")
                 

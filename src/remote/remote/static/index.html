@@ -13,6 +13,7 @@
 <style type="text/css">
 #Submit {
 color: white;
+background-color: navy;
 font-size: 20px;
 font-weight: bold;
 margin: 70px;
@@ -21,11 +22,15 @@ height: 200px;
 width: 250px;
 position: center;
 text-align: center;
-border-width: 4px 4px;
+border-radius 15px;
+border: none;
+padding: 10px 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 position:center;
-right:0px;
-padding: 0px;}
+right:0px;}
 #Status {
+background-color: navy;
+color: white;
 font-size: 20px;
 font-weight: bold;
 margin: 70px;
@@ -34,10 +39,12 @@ height: 100px;
 width: 250px;
 position: center;
 text-align: center;
-border-width: 4px 4px;
+border-radius 15px;
+border: none;
+padding: 10px 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 position:center;
-right:0px;
-padding: 0px;}
+right:0px;}
 body{
 margin: 5px;
 font-family: Helvetica;
@@ -53,6 +60,13 @@ font-weight: bold;}
 .show{display: block;}
 .done{opacity:0.2;}
 .notdone{opacity:1;}
+fieldset {
+  max-width: 300px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
 </style>
 
 <script language="javascript" >
@@ -70,7 +84,7 @@ function waitWarn(a) {
                     console.log("Run control successful.");
                     // Immediately request an update after sending the command
                     // Add a small delay for the physical action to start/stop
-                    setTimeout(updateStatus, 1000); 
+                    setTimeout(updateStatus, 1000);
                 } else {
                     throw new Error('Run command failed.');
                 }
@@ -87,35 +101,34 @@ function waitWarn(a) {
 }
 
 function updateStatus() {
+    document.getElementById("Submit").value = "Door Status: \n Loading...";
+    document.getElementById("Status").value = "Update Status: \n Loading...";
     fetch('/api/status')
     .then(response => response.json())
     .then(data => {
-        
-        let submitButton = document.getElementById("Submit");
-        
-        // 1. Update Door Status
-        document.getElementById("door_status").textContent = data.state;
-        
-        // 2. Update Submit Button
-        submitButton.value = data.button_text;
-        submitButton.style.backgroundColor = data.button_color;
-        
-        // 3. Update onboard Temperature
+
+        // 1. Update Door Status and Submit Button
+        //document.getElementById("door_status").textContent = data.state;
+        document.getElementById("Submit").value = "Door Status: \n" + data.state;
+        document.getElementById("Submit").style.backgroundColor = data.button_color;
+
+        // 2. Update onboard Temperature
         document.getElementById("temp_display").textContent = data.temperature;
-        
-        // 4. Update station, external temperature and relative humidity
+
+        // 3. Update station, external temperature and relative humidity
         document.getElementById("station").textContent = data.station;
         document.getElementById("ext_temperature").textContent = data.ext_temperature;
         document.getElementById("ext_RH").textContent = data.ext_RH;
-        
-        // 5. Update Time, IP and version
+
+        // 4. Update Time, IP and version
         document.getElementById("datetime").textContent = data.datetime;
         document.getElementById("ip_address").textContent = data.ip;
         document.getElementById("version").textContent = data.version;
-        
-        // 6. Reset Warning and buttons
-        document.getElementById("warnLabel").textContent = "Ready"; 
-        submitButton.disabled = false;
+
+        // 5. Reset Warning and buttons
+        //document.getElementById("warnLabel").textContent = "Update Status: \n Ready";
+        document.getElementById("Status").value = "Update Status";
+        document.getElementById("Submit").disabled = false;
         document.getElementById("Status").disabled = false;
     })
     .catch(error => {
@@ -130,26 +143,27 @@ function updateStatus() {
 // Start the status update when the page is fully loaded
 document.addEventListener('DOMContentLoaded', updateStatus);
 // Optionally, update status every 10 seconds automatically
-setInterval(updateStatus, 10000); 
+setInterval(updateStatus, 10000);
 </script>
 
 <form name="submitForm">
     <input type="button" id="Submit" value="Loading..." onclick="waitWarn(0)" />
 </form>
 
-Door status is: <span id="door_status">Loading...</span>
+<!--Door status is: <span id="door_status">Loading...</span>-->
 
 <form name="statusForm">
     <input type="button" id="Status" value="Update Status" onclick="waitWarn(1)" />
-    <br><label id="warnLabel">Ready</label>
+    <!--<br><label id="warnLabel">Ready</label>-->
 </form>
-
-<br>Indoor Temperature: <span id="temp_display">Loading...</span>
+<fieldset>
+Indoor Temperature: <span id="temp_display">Loading...</span>
 <br>
 <br>Temperature: <span id="ext_temperature">Loading...</span>
 <br>Relative Humidity: <span id="ext_RH">Loading...</span>
 <br><small><br>Weather station: <span id="station">Loading...</span>
 <br><span id="datetime">Time N/A</span></small>
+</fieldset>
 
 <br><br><small><small>Device IP: <span id="ip_address">N/A</span></small></small>
 <br><small><small>Version: <span id="version">Version: N/A</span></small></small>

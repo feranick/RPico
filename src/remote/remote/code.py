@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.03.1
+# * v2025.10.04.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -23,7 +23,7 @@ import adafruit_mcp9808
 # Import the necessary modules.
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.03.1"
+version = "2025.10.04.1"
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -60,12 +60,12 @@ class Conf:
                 print("Warning: 'triggerDistance' not found in settings.toml. Using default.")
         except ValueError:
             print(f"Warning: Invalid triggerDistance '{trig_dist_env}' in settings.toml. Using default.")
-            
+
 ############################
 # Server
 ############################
 class GarageServer:
-    def __init__(self, control, sensors):            
+    def __init__(self, control, sensors):
         try:
             self.station = os.getenv("station")
             self.serial = bool(os.getenv("serial"))
@@ -75,7 +75,7 @@ class GarageServer:
             self.serial = True
         except Exception as e:
             print(f"Error reading settings: {e}")
-            
+
         self.control = control
         self.sensors = sensors
         self.ntp = None
@@ -170,7 +170,6 @@ class GarageServer:
 
             json_content = '{' + \
                 '"state":"' + state + '",' + \
-                '"button_text":"' + label[0] + '",' + \
                 '"button_color":"' + label[1] + '",' + \
                 '"temperature":"' + temperature + '",' + \
                 '"datetime":"' + date_time + '",' + \
@@ -180,7 +179,6 @@ class GarageServer:
                 '"ext_RH":"{:.1f} %",'.format(nws[1]) + \
                 '"version":"' + version + '"' + \
                 '}'
-
             headers = {"Content-Type": "application/json"}
 
             # Return the response using the compatible Response constructor
@@ -194,7 +192,7 @@ class GarageServer:
         @self.server.route("/icon192.png")
         def icon_route(request):
             return self._serve_static_file(request, 'static/icon192.png', content_type="image/png")
-            
+
         @self.server.route("/icon.png")
         def icon_route(request):
             return self._serve_static_file(request, 'static/icon.png', content_type="image/png")
@@ -204,21 +202,21 @@ class GarageServer:
 
     def _serve_static_file(self, request, filepath, content_type="text/html"):
         """Manually reads a file and returns an HTTP response with a customizable content type."""
-        
+
         # Determine if the file should be read in binary mode
         is_binary = filepath.endswith(('.ico', '.png'))
         mode = "rb" if is_binary else "r"
         encoding = None if is_binary else 'utf-8'
-        
+
         try:
             with open(filepath, mode, encoding=encoding) as f:
                 content = f.read()
-            
+
             headers = {"Content-Type": content_type}
-            
+
             # The Response object handles both text (str) and binary (bytes) content
             return Response(request, content, headers=headers)
-            
+
         except OSError as e:
             # Handle File Not Found or other OS errors
             print(f"Error opening or reading file {filepath}: {e}")
@@ -234,7 +232,7 @@ class GarageServer:
             if not wifi.radio.connected:
                 print("WiFi connection lost. Rebooting...")
                 self.reboot()
-                
+
             try:
                 self.server.poll()
             except (BrokenPipeError, OSError) as e:
@@ -244,7 +242,7 @@ class GarageServer:
                     pass
             except Exception as e:
                 print(f"Unexpected critical error in server poll: {e}")
-                
+
             time.sleep(0.01)
 
     def setup_ntp(self):
@@ -266,7 +264,7 @@ class GarageServer:
                 print(f"Error converting NTP time: {e}")
                 return "Time N/A"
         return "Time N/A"
-        
+
     ############################
     # Retrieve NVS data
     ############################
@@ -280,6 +278,7 @@ class GarageServer:
             raw = [response_json['properties']['temperature']['value'],
                 response_json['properties']['relativeHumidity']['value'],
                 response_json['properties']['seaLevelPressure']['value']]
+
             for i in range(len(raw)):
                 if raw[i] is None:
                     data.append(default[i])

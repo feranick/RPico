@@ -1,7 +1,7 @@
 {
   "name": "Pico Garage Opener",
   "short_name": "PicoGarageOpener",
-  "description": "Control system for the Pico W Garage Opener.",
+  "description": "Control system for the Pico W Garage Opener with weather.",
   "start_url": ".",
   "display": "standalone",
   "icons": [

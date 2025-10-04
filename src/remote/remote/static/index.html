@@ -16,7 +16,7 @@ color: white;
 background-color: navy;
 font-size: 20px;
 font-weight: bold;
-margin: 70px;
+margin: 30px;
 margin-top: 10px;
 height: 200px;
 width: 250px;
@@ -33,7 +33,7 @@ background-color: navy;
 color: white;
 font-size: 20px;
 font-weight: bold;
-margin: 70px;
+margin: 30px;
 margin-top: 10px;
 height: 100px;
 width: 250px;
@@ -119,7 +119,12 @@ function updateStatus() {
         document.getElementById("station").textContent = data.station;
         document.getElementById("ext_temperature").textContent = data.ext_temperature;
         document.getElementById("ext_RH").textContent = data.ext_RH;
-
+        document.getElementById("ext_pressure").textContent = data.ext_pressure;
+        document.getElementById("ext_dewpoint").textContent = data.ext_dewpoint;
+        document.getElementById("ext_heatindex").textContent = data.ext_heatindex;
+        document.getElementById("ext_visibility").textContent = data.ext_visibility;
+        document.getElementById("ext_weather").textContent = data.ext_weather;
+        
         // 4. Update Time, IP and version
         document.getElementById("datetime").textContent = data.datetime;
         document.getElementById("ip_address").textContent = data.ip;
@@ -149,9 +154,7 @@ setInterval(updateStatus, 10000);
 <form name="submitForm">
     <input type="button" id="Submit" value="Loading..." onclick="waitWarn(0)" />
 </form>
-
 <!--Door status is: <span id="door_status">Loading...</span>-->
-
 <form name="statusForm">
     <input type="button" id="Status" value="Update Status" onclick="waitWarn(1)" />
     <!--<br><label id="warnLabel">Ready</label>-->
@@ -161,6 +164,11 @@ Indoor Temperature: <span id="temp_display">Loading...</span>
 <br>
 <br>Temperature: <span id="ext_temperature">Loading...</span>
 <br>Relative Humidity: <span id="ext_RH">Loading...</span>
+<br>Pressure: <span id="ext_pressure">Loading...</span>
+<br>Dew Point: <span id="ext_dewpoint">Loading...</span>
+<br>Heat Index: <span id="ext_heatindex">Loading...</span>
+<br>Visibility: <span id="ext_visibility">Loading...</span>
+<br>Weather: <span id="ext_weather">Loading...</span>
 <br><small><br>Weather station: <span id="station">Loading...</span>
 <br><span id="datetime">Time N/A</span></small>
 </fieldset>

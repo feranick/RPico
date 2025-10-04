@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.04.1
+# * v2025.10.04.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -23,7 +23,7 @@ import adafruit_mcp9808
 # Import the necessary modules.
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.04.1"
+version = "2025.10.04.2"
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -167,6 +167,8 @@ class GarageServer:
             temperature = self.sensors.getTemperature()
             date_time = self.getDateTime()
             nws = self.get_nws_data()
+            
+            print(nws)
 
             json_content = '{' + \
                 '"state":"' + state + '",' + \
@@ -177,6 +179,11 @@ class GarageServer:
                 '"station":"' + self.station + '",' + \
                 '"ext_temperature":"' + str(nws[0]) + ' C",' + \
                 '"ext_RH":"{:.1f} %",'.format(nws[1]) + \
+                '"ext_pressure":"{:.1f} mbar",'.format(nws[2]/100) + \
+                '"ext_dewpoint":"{:.1f} C",'.format(nws[3]) + \
+                '"ext_heatindex":"{:.1f}",'.format(nws[4]) + \
+                '"ext_visibility":"{:.1f} m",'.format(nws[5]) + \
+                '"ext_weather":"{:s}",'.format(nws[6]) + \
                 '"version":"' + version + '"' + \
                 '}'
             headers = {"Content-Type": "application/json"}
@@ -269,23 +276,32 @@ class GarageServer:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
-        default = [0,0,102000]
+        default = [0,0,102000,0,0,0,""]
         data = []
         try:
             self.r = self.requests.get(self.url, headers=self.headers)
             #self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
             response_json = self.r.json()
+        
             raw = [response_json['properties']['temperature']['value'],
                 response_json['properties']['relativeHumidity']['value'],
-                response_json['properties']['seaLevelPressure']['value']]
-
+                response_json['properties']['seaLevelPressure']['value'],
+                response_json['properties']['dewpoint']['value'],
+                response_json['properties']['heatIndex']['value'],
+                response_json['properties']['visibility']['value']]
+            if len(response_json['properties']['presentWeather'])>0:
+                raw.append(response_json['properties']['presentWeather'][0]['weather'])
+            else:
+                raw.append("N/A")
+                
             for i in range(len(raw)):
                 if raw[i] is None:
                     data.append(default[i])
                 else:
-                    data.append(float(raw[i]))
+                    data.append(raw[i])
             self.r.close()
             return data
+
         except adafruit_requests.OutOfRetries:
             print("NWS: Too many retries (likely network issue)")
             return default
@@ -301,6 +317,7 @@ class GarageServer:
         finally:
             if hasattr(self, 'r') and self.r:
                 self.r.close()
+        
 
 ############################
 # Control, Sensors, and Main

@@ -13,7 +13,7 @@
 <style type="text/css">
 #Submit {
 color: white;
-background-color: navy;
+background-color: #155084;
 font-size: 20px;
 font-weight: bold;
 margin: 30px;
@@ -29,7 +29,7 @@ box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 position:center;
 right:0px;}
 #Status {
-background-color: navy;
+background-color: #155084;
 color: white;
 font-size: 20px;
 font-weight: bold;
@@ -72,9 +72,11 @@ fieldset {
 <script language="javascript" >
 function waitWarn(a) {
     // Send request via fetch instead of form submit to prevent full page reload
-    document.getElementById("warnLabel").innerHTML = "Please wait...";
+    //document.getElementById("warnLabel").innerHTML = "Please wait...";
     document.getElementById("Submit").disabled = true;
     document.getElementById("Status").disabled = true;
+    document.getElementById("Submit").style.backgroundColor = "#155084";
+    document.getElementById("Status").style.backgroundColor = "#155084";
 
     if (a === 0) {
         // Handle "Run Control" click
@@ -103,6 +105,7 @@ function waitWarn(a) {
 function updateStatus() {
     document.getElementById("Submit").value = "Door Status: \n Loading...";
     document.getElementById("Status").value = "Update Status: \n Loading...";
+    //document.getElementById("warnLabel").textContent = "Testing";
     fetch('/api/status')
     .then(response => response.json())
     .then(data => {
@@ -111,6 +114,7 @@ function updateStatus() {
         //document.getElementById("door_status").textContent = data.state;
         document.getElementById("Submit").value = "Door Status: \n" + data.state;
         document.getElementById("Submit").style.backgroundColor = data.button_color;
+        document.getElementById("Status").style.backgroundColor = "navy";
 
         // 2. Update onboard Temperature
         document.getElementById("temp_display").textContent = data.temperature;
@@ -124,7 +128,7 @@ function updateStatus() {
         document.getElementById("ext_heatindex").textContent = data.ext_heatindex;
         document.getElementById("ext_visibility").textContent = data.ext_visibility;
         document.getElementById("ext_weather").textContent = data.ext_weather;
-        
+
         // 4. Update Time, IP and version
         document.getElementById("datetime").textContent = data.datetime;
         document.getElementById("ip_address").textContent = data.ip;
@@ -133,6 +137,7 @@ function updateStatus() {
         // 5. Reset Warning and buttons
         //document.getElementById("warnLabel").textContent = "Update Status: \n Ready";
         document.getElementById("Status").value = "Update Status";
+        document.getElementById("warnLabel").textContent = "";
         document.getElementById("Submit").disabled = false;
         document.getElementById("Status").disabled = false;
     })
@@ -148,7 +153,7 @@ function updateStatus() {
 // Start the status update when the page is fully loaded
 document.addEventListener('DOMContentLoaded', updateStatus);
 // Optionally, update status every 10 seconds automatically
-setInterval(updateStatus, 10000);
+//setInterval(updateStatus, 10000);
 </script>
 
 <form name="submitForm">
@@ -157,7 +162,7 @@ setInterval(updateStatus, 10000);
 <!--Door status is: <span id="door_status">Loading...</span>-->
 <form name="statusForm">
     <input type="button" id="Status" value="Update Status" onclick="waitWarn(1)" />
-    <!--<br><label id="warnLabel">Ready</label>-->
+    <br><label id="warnLabel">Ready</label>
 </form>
 <fieldset>
 Indoor Temperature: <span id="temp_display">Loading...</span>

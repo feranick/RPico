@@ -167,7 +167,7 @@ class GarageServer:
             temperature = self.sensors.getTemperature()
             date_time = self.getDateTime()
             nws = self.get_nws_data()
-            
+
             print(nws)
 
             json_content = '{' + \
@@ -282,7 +282,7 @@ class GarageServer:
             self.r = self.requests.get(self.url, headers=self.headers)
             #self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
             response_json = self.r.json()
-        
+
             raw = [response_json['properties']['temperature']['value'],
                 response_json['properties']['relativeHumidity']['value'],
                 response_json['properties']['seaLevelPressure']['value'],
@@ -293,7 +293,7 @@ class GarageServer:
                 raw.append(response_json['properties']['presentWeather'][0]['weather'])
             else:
                 raw.append("N/A")
-                
+
             for i in range(len(raw)):
                 if raw[i] is None:
                     data.append(default[i])
@@ -317,7 +317,7 @@ class GarageServer:
         finally:
             if hasattr(self, 'r') and self.r:
                 self.r.close()
-        
+
 
 ############################
 # Control, Sensors, and Main

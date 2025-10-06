@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.04.2
+# * v2025.10.06.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -23,7 +23,7 @@ import adafruit_mcp9808
 # Import the necessary modules.
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.04.2"
+version = "2025.10.06.1"
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -352,8 +352,8 @@ class Sensors:
             print(f"Failed to initialize HCSR04: {e}")
 
         self.trigDist = conf.triggerDistance
-        i2c = busio.I2C(board.GP1, board.GP0)
         try:
+            i2c = busio.I2C(board.GP1, board.GP0)
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
             self.avDeltaT = microcontroller.cpu.temperature - self.mcp.temperature
             print("mcp OK")

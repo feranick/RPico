@@ -109,6 +109,7 @@ function updateStatus() {
     fetch('/api/status')
     .then(response => response.json())
     .then(data => {
+    console.log(data);
 
         // 1. Update Door Status and Submit Button
         //document.getElementById("door_status").textContent = data.state;
@@ -174,11 +175,11 @@ Indoor Temperature: <span id="temp_display">Loading...</span>
 <br>Heat Index: <span id="ext_heatindex">Loading...</span>
 <br>Visibility: <span id="ext_visibility">Loading...</span>
 <br>Weather: <span id="ext_weather">Loading...</span>
-<br><small><br>Weather station: <span id="station">Loading...</span>
+<br><small><br><span id="station">Loading...</span>
 <br><span id="datetime">Time N/A</span></small>
 </fieldset>
 
 <br><br><small><small>Device IP: <span id="ip_address">N/A</span></small></small>
-<br><small><small>Version: <span id="version">Version: N/A</span></small></small>
+<br><small><small>Version: <span id="version">N/A</span></small></small>
 </body>
 </html>

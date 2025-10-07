@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.06.1
+# * v2025.10.07.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -14,16 +14,17 @@ import board
 import digitalio
 import socketpool
 import ssl
+import json
+
 from adafruit_datetime import datetime
 import adafruit_requests
 import adafruit_ntp
+
 import adafruit_hcsr04
 import adafruit_mcp9808
-
-# Import the necessary modules.
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.06.1"
+version = "2025.10.07.1"
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -168,24 +169,27 @@ class GarageServer:
             date_time = self.getDateTime()
             nws = self.get_nws_data()
 
-            print(nws)
-
-            json_content = '{' + \
-                '"state":"' + state + '",' + \
-                '"button_color":"' + label[1] + '",' + \
-                '"temperature":"' + temperature + '",' + \
-                '"datetime":"' + date_time + '",' + \
-                '"ip":"' + self.ip + '",' + \
-                '"station":"' + self.station + '",' + \
-                '"ext_temperature":"' + str(nws[0]) + ' C",' + \
-                '"ext_RH":"{:.1f} %",'.format(nws[1]) + \
-                '"ext_pressure":"{:.1f} mbar",'.format(nws[2]/100) + \
-                '"ext_dewpoint":"{:.1f} C",'.format(nws[3]) + \
-                '"ext_heatindex":"{:.1f}",'.format(nws[4]) + \
-                '"ext_visibility":"{:.1f} m",'.format(nws[5]) + \
-                '"ext_weather":"{:s}",'.format(nws[6]) + \
-                '"version":"' + version + '"' + \
-                '}'
+            data_dict = {
+                "state": state,
+                "button_color": label[1],
+                "temperature": temperature,
+                "datetime": date_time,
+                "ip": self.ip,
+                "station": nws[6],
+                # Combine NWS data with units, assuming nws elements are already strings
+                "ext_temperature": f"{nws[0]} C",
+                "ext_RH": f"{nws[1]} %",
+                "ext_pressure": f"{nws[2]} mbar",
+                "ext_dewpoint": f"{nws[3]} C",
+                "ext_heatindex": nws[4], # No unit specified in original, append if needed
+                "ext_visibility": f"{nws[5]} m",
+                "ext_weather": nws[7],
+                "version": version,
+            }
+            json_content = json.dumps(data_dict)
+            
+            print(json_content)
+            
             headers = {"Content-Type": "application/json"}
 
             # Return the response using the compatible Response constructor
@@ -276,48 +280,89 @@ class GarageServer:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
-        default = [0,0,102000,0,0,0,""]
+    
+        DEFAULT_MISSING = "--"
+
+        # 1. Define the order, property keys, and format strings
+        keys = [
+            'temperature',
+            'relativeHumidity',
+            'seaLevelPressure',
+            'dewpoint',
+            'heatIndex',
+            'visibility',
+        ]
+
+        # Map each key to its required format string
+        # We only care about 'format' here, as the 'default' will be DEFAULT_MISSING ("--")
+        formats_map = {
+            'temperature':        '{:.1f}',
+            'relativeHumidity':   '{:.0f}',
+            'seaLevelPressure':   '{:.0f}',
+            'dewpoint':           '{:.1f}',
+            'heatIndex':          '{:.0f}',
+            'visibility':         '{:.0f}',
+            # 'presentWeather' is a special case handled separately
+        }
         data = []
+    
+        # Pre-calculate the full list of missing defaults for use in the final 'except' block.
+        full_defaults_list = [DEFAULT_MISSING] * len(keys)
+
         try:
             self.r = self.requests.get(self.url, headers=self.headers)
-            #self.r.raise_for_status() # Raise an HTTPError for bad responses (4xx or 5xx)
+            # self.r.raise_for_status() # Optional: Add to catch bad HTTP responses
             response_json = self.r.json()
-
-            raw = [response_json['properties']['temperature']['value'],
-                response_json['properties']['relativeHumidity']['value'],
-                response_json['properties']['seaLevelPressure']['value'],
-                response_json['properties']['dewpoint']['value'],
-                response_json['properties']['heatIndex']['value'],
-                response_json['properties']['visibility']['value']]
-            if len(response_json['properties']['presentWeather'])>0:
-                raw.append(response_json['properties']['presentWeather'][0]['weather'])
-            else:
-                raw.append("N/A")
-
-            for i in range(len(raw)):
-                if raw[i] is None:
-                    data.append(default[i])
+            properties = response_json['properties']
+            
+            for key in keys:
+                format_str = formats_map[key]
+                raw_value = properties.get(key, {}).get('value')
+            
+                if raw_value is None:
+                    formatted_value = DEFAULT_MISSING
                 else:
-                    data.append(raw[i])
+                    try:
+                        # Cast to float, apply the format, which results in a string.
+                        formatted_value = format_str.format(float(raw_value))
+                    except (ValueError, TypeError):
+                        # Fallback to the uniform default if the value isn't a valid number
+                        formatted_value = DEFAULT_MISSING
+
+                data.append(formatted_value)
+
+            stationName = properties.get('stationName')
+            data.append(str(stationName))
+        
+            weather_list = properties.get('presentWeather', [])
+            weather_value = None
+        
+            if weather_list and len(weather_list) > 0:
+                weather_value = weather_list[0].get('weather')
+            
+            if weather_value is None:
+                data.append(DEFAULT_MISSING)
+            else:
+                data.append(str(weather_value))
+
             self.r.close()
             return data
-
+        
         except adafruit_requests.OutOfRetries:
             print("NWS: Too many retries (likely network issue)")
-            return default
+            return full_defaults_list
         except RuntimeError as e: # Covers socket errors, etc.
             print(f"NWS: Network error: {e}")
-            return default
+            return full_defaults_list
         except (KeyError, TypeError, ValueError) as e: # Problems with JSON structure or content
             print(f"NWS: Error parsing data: {e}")
-            return default
+            return full_defaults_list
         except Exception as e:
             print(f"NWS: An unexpected error occurred: {e}")
-            return default
+            return full_defaults_list
         finally:
             if hasattr(self, 'r') and self.r:
                 self.r.close()
-
 
 ############################
 # Control, Sensors, and Main
@@ -356,7 +401,7 @@ class Sensors:
             i2c = busio.I2C(board.GP1, board.GP0)
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
             self.avDeltaT = microcontroller.cpu.temperature - self.mcp.temperature
-            print("mcp OK")
+            print("Temperature sensor (MCP9808) found and initialized.")
         except Exception as e:
             self.avDeltaT = 0
             print(f"Failed to initialize MCP9808: {e}")

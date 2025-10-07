@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.07.1
+# * v2025.10.07.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,11 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.07.1"
+version = "2025.10.07.2"
+
+I2C_SCL = board.GP17
+I2C_SDA = board.GP16
+DOOR_SIGNAL = board.GP22
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -176,12 +180,11 @@ class GarageServer:
                 "datetime": date_time,
                 "ip": self.ip,
                 "station": nws[6],
-                # Combine NWS data with units, assuming nws elements are already strings
-                "ext_temperature": f"{nws[0]} C",
-                "ext_RH": f"{nws[1]} %",
-                "ext_pressure": f"{nws[2]} mbar",
-                "ext_dewpoint": f"{nws[3]} C",
-                "ext_heatindex": nws[4], # No unit specified in original, append if needed
+                "ext_temperature": f"{nws[0]} \u00b0C",
+                "ext_heatindex": f"{nws[1]} \u00b0C",
+                "ext_RH": f"{nws[2]} %",
+                "ext_pressure": f"{nws[3]} mbar",
+                "ext_dewpoint": f"{nws[4]} \u00b0C",
                 "ext_visibility": f"{nws[5]} m",
                 "ext_weather": nws[7],
                 "version": version,
@@ -286,10 +289,10 @@ class GarageServer:
         # 1. Define the order, property keys, and format strings
         keys = [
             'temperature',
+            'heatIndex',
             'relativeHumidity',
             'seaLevelPressure',
             'dewpoint',
-            'heatIndex',
             'visibility',
         ]
 
@@ -297,10 +300,10 @@ class GarageServer:
         # We only care about 'format' here, as the 'default' will be DEFAULT_MISSING ("--")
         formats_map = {
             'temperature':        '{:.1f}',
+            'heatIndex':          '{:.1f}',
             'relativeHumidity':   '{:.0f}',
             'seaLevelPressure':   '{:.0f}',
             'dewpoint':           '{:.1f}',
-            'heatIndex':          '{:.0f}',
             'visibility':         '{:.0f}',
             # 'presentWeather' is a special case handled separately
         }
@@ -369,7 +372,7 @@ class GarageServer:
 ############################
 class Control:
     def __init__(self):
-        self.btn = digitalio.DigitalInOut(board.GP18)
+        self.btn = digitalio.DigitalInOut(DOOR_SIGNAL)
         self.btn.direction = digitalio.Direction.OUTPUT
         self.btn.value = False
 
@@ -398,7 +401,7 @@ class Sensors:
 
         self.trigDist = conf.triggerDistance
         try:
-            i2c = busio.I2C(board.GP1, board.GP0)
+            i2c = busio.I2C(I2C_SCL, I2C_SDA)
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
             self.avDeltaT = microcontroller.cpu.temperature - self.mcp.temperature
             print("Temperature sensor (MCP9808) found and initialized.")
@@ -435,9 +438,9 @@ class Sensors:
         if not self.mcp:
             print("MCP9808 not initialized. Using CPU temp with estimated offset.")
             if self.numTimes > 1 and self.avDeltaT != 0 :
-                return f"{round(t_cpu - self.avDeltaT, 1)} C (CPU adj.)"
+                return f"{round(t_cpu - self.avDeltaT, 1)} \u00b0C (CPU adj.)"
             else:
-                return f"{round(t_cpu, 1)} C (CPU raw)"
+                return f"{round(t_cpu, 1)} \u00b0C (CPU raw)"
         try:
             t_mcp = self.mcp.temperature
             delta_t = t_cpu - t_mcp
@@ -447,11 +450,11 @@ class Sensors:
             self.numTimes += 1
             print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
             time.sleep(1)
-            return str(round(t_mcp,1)) + " C"
+            return str(round(t_mcp,1)) + " \u00b0C"
         except:
             print("MCP9806 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
             time.sleep(1)
-            return str(round(t_cpu-self.avDeltaT, 1))+" C (CPU)"
+            return str(round(t_cpu-self.avDeltaT, 1))+" \u00b0C (CPU)"
 
 def main():
     conf = Conf()

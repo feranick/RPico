@@ -73,12 +73,12 @@ fieldset {
 function waitWarn(a) {
     // Send request via fetch instead of form submit to prevent full page reload
     //document.getElementById("warnLabel").innerHTML = "Please wait...";
-    document.getElementById("Submit").disabled = true;
     document.getElementById("Status").disabled = true;
-    document.getElementById("Submit").style.backgroundColor = "#155084";
     document.getElementById("Status").style.backgroundColor = "#155084";
 
     if (a === 0) {
+        document.getElementById("Submit").disabled = true;
+        document.getElementById("Submit").style.backgroundColor = "#155084";
         // Handle "Run Control" click
         fetch('./run') // Use fetch for the run command
             .then(response => {

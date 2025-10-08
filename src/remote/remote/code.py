@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.07.2
+# * v2025.10.08.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.07.2"
+version = "2025.10.08.1"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -190,9 +190,9 @@ class GarageServer:
                 "version": version,
             }
             json_content = json.dumps(data_dict)
-            
+
             print(json_content)
-            
+
             headers = {"Content-Type": "application/json"}
 
             # Return the response using the compatible Response constructor
@@ -283,7 +283,7 @@ class GarageServer:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
-    
+
         DEFAULT_MISSING = "--"
 
         # 1. Define the order, property keys, and format strings
@@ -308,7 +308,7 @@ class GarageServer:
             # 'presentWeather' is a special case handled separately
         }
         data = []
-    
+
         # Pre-calculate the full list of missing defaults for use in the final 'except' block.
         full_defaults_list = [DEFAULT_MISSING] * len(keys)
 
@@ -317,11 +317,11 @@ class GarageServer:
             # self.r.raise_for_status() # Optional: Add to catch bad HTTP responses
             response_json = self.r.json()
             properties = response_json['properties']
-            
+
             for key in keys:
                 format_str = formats_map[key]
                 raw_value = properties.get(key, {}).get('value')
-            
+
                 if raw_value is None:
                     formatted_value = DEFAULT_MISSING
                 else:
@@ -336,13 +336,13 @@ class GarageServer:
 
             stationName = properties.get('stationName')
             data.append(str(stationName))
-        
+
             weather_list = properties.get('presentWeather', [])
             weather_value = None
-        
+
             if weather_list and len(weather_list) > 0:
                 weather_value = weather_list[0].get('weather')
-            
+
             if weather_value is None:
                 data.append(DEFAULT_MISSING)
             else:
@@ -350,7 +350,7 @@ class GarageServer:
 
             self.r.close()
             return data
-        
+
         except adafruit_requests.OutOfRetries:
             print("NWS: Too many retries (likely network issue)")
             return full_defaults_list
@@ -378,7 +378,7 @@ class Control:
 
     def runControl(self):
         self.btn.value = True
-        time.sleep(2)
+        time.sleep(4)
         self.btn.value = False
         time.sleep(1)
 

@@ -86,10 +86,6 @@ class GarageServer:
         self.ntp = None
         self.server = None
         self.ip = "0.0.0.0"
-        self.url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
-        self.user_agent = "(feranick, feranick@hotmail.com)"
-        self.headers = {'Accept': 'application/geo+json',
-            'User-Agent' : self.user_agent}
 
         try:
             self.connect_wifi()
@@ -283,6 +279,10 @@ class GarageServer:
     # Retrieve NVS data
     ############################
     def get_nws_data(self):
+        nws_url = "https://api.weather.gov/stations/"+self.station+"/observations/latest/"
+        user_agent = "(feranick, feranick@hotmail.com)"
+        headers = {'Accept': 'application/geo+json',
+            'User-Agent' : user_agent}
 
         DEFAULT_MISSING = "--"
 
@@ -313,7 +313,7 @@ class GarageServer:
         full_defaults_list = [DEFAULT_MISSING] * len(keys)
 
         try:
-            self.r = self.requests.get(self.url, headers=self.headers)
+            self.r = self.requests.get(nws_url, headers=headers)
             # self.r.raise_for_status() # Optional: Add to catch bad HTTP responses
             response_json = self.r.json()
             properties = response_json['properties']

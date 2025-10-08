@@ -187,6 +187,8 @@ class GarageServer:
                 "ext_RH": f"{nws[2]} %",
                 "ext_aqi": f"{aqi[0]}",
                 "ext_aqi_color": f"{aqi[1]}",
+                "ext_next_aqi": f"{aqi[2]}",
+                "ext_next_aqi_color": f"{aqi[3]}",
                 "ext_pressure": f"{nws[3]} mbar",
                 #"ext_dewpoint": f"{nws[4]} \u00b0C",
                 "ext_visibility": f"{nws[5]} m",
@@ -387,9 +389,19 @@ class GarageServer:
         return lat, lon
         
     def get_openweather_aq(self):
-        geo_url = "http://api.openweathermap.org/data/2.5/air_pollution?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
-        r = self.requests.get(geo_url)
+        aqi_current_url = "http://api.openweathermap.org/data/2.5/air_pollution?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
+        aqi_forecast_url = "http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
+        r = self.requests.get(aqi_current_url)
         aqi = r.json()["list"][0]["main"]["aqi"]
+        r.close()
+        
+        r = self.requests.get(aqi_forecast_url)
+        next_aqi = r.json()["list"][24]["main"]["aqi"]
+        r.close()
+
+        return aqi, self.col_aqi(aqi), next_aqi, self.col_aqi(next_aqi)
+        
+    def col_aqi(self, aqi):
         if aqi == 1:
             col = "green"
         elif aqi == 2:
@@ -402,8 +414,7 @@ class GarageServer:
             col = "purple"
         else:
             col = "white"
-        r.close()
-        return aqi, col
+        return col
 
 ############################
 # Control, Sensors, and Main

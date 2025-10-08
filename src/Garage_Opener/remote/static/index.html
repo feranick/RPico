@@ -128,6 +128,8 @@ function updateStatus() {
         document.getElementById("ext_RH").textContent = data.ext_RH;
         document.getElementById("ext_aqi").textContent = data.ext_aqi;
         document.getElementById("ext_aqi").style.color = data.ext_aqi_color;
+        document.getElementById("ext_next_aqi").textContent = data.ext_next_aqi;
+        document.getElementById("ext_next_aqi").style.color = data.ext_next_aqi_color;
         
         document.getElementById("ext_pressure").textContent = data.ext_pressure;
         //document.getElementById("ext_dewpoint").textContent = data.ext_dewpoint;
@@ -171,16 +173,16 @@ document.addEventListener('DOMContentLoaded', updateStatus);
     <br><label id="warnLabel"></label>
 </form>
 <fieldset>
-Indoor Temperature: <span id="temp_display">Loading...</span>
+Indoor Temperature: <span id="temp_display">...</span>
 <br>
-<br>Temperature: <span id="ext_temperature">Loading...</span>
-<br>Real Feeling: <span id="ext_heatindex">Loading...</span>
-<br>Relative Humidity: <span id="ext_RH">Loading...</span>
-<br>Air Quality Index: <span id="ext_aqi">Loading...</span>
-<br>Pressure: <span id="ext_pressure">Loading...</span>
-<!--<br>Dew Point: <span id="ext_dewpoint">Loading...</span>-->
-<br>Visibility: <span id="ext_visibility">Loading...</span>
-<br>Weather: <span id="ext_weather">Loading...</span>
+<br>Temperature: <span id="ext_temperature">...</span>
+<br>Real Feeling: <span id="ext_heatindex">...</span>
+<br>Relative Humidity: <span id="ext_RH">...</span>
+<br>Air Quality Index: <span id="ext_aqi">...</span> (24h: <span id="ext_next_aqi">...</span>)
+<br>Pressure: <span id="ext_pressure">...</span>
+<!--<br>Dew Point: <span id="ext_dewpoint">...</span>-->
+<br>Visibility: <span id="ext_visibility">...</span>
+<br>Weather: <span id="ext_weather">...</span>
 <br><small><br><span id="station"></span>
 <br><span id="datetime">Time N/A</span></small>
 </fieldset>

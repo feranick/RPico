@@ -61,6 +61,8 @@ font-weight: bold;}
 .done{opacity:0.2;}
 .notdone{opacity:1;}
 fieldset {
+  background-color: grey;
+  color: white;
   max-width: 300px;
   margin: auto;
   padding: 20px;
@@ -124,8 +126,11 @@ function updateStatus() {
         document.getElementById("station").textContent = data.station;
         document.getElementById("ext_temperature").textContent = data.ext_temperature;
         document.getElementById("ext_RH").textContent = data.ext_RH;
+        document.getElementById("ext_aqi").textContent = data.ext_aqi;
+        document.getElementById("ext_aqi").style.color = data.ext_aqi_color;
+        
         document.getElementById("ext_pressure").textContent = data.ext_pressure;
-        document.getElementById("ext_dewpoint").textContent = data.ext_dewpoint;
+        //document.getElementById("ext_dewpoint").textContent = data.ext_dewpoint;
         document.getElementById("ext_heatindex").textContent = data.ext_heatindex;
         document.getElementById("ext_visibility").textContent = data.ext_visibility;
         document.getElementById("ext_weather").textContent = data.ext_weather;
@@ -171,8 +176,9 @@ Indoor Temperature: <span id="temp_display">Loading...</span>
 <br>Temperature: <span id="ext_temperature">Loading...</span>
 <br>Real Feeling: <span id="ext_heatindex">Loading...</span>
 <br>Relative Humidity: <span id="ext_RH">Loading...</span>
+<br>Air Quality Index: <span id="ext_aqi">Loading...</span>
 <br>Pressure: <span id="ext_pressure">Loading...</span>
-<br>Dew Point: <span id="ext_dewpoint">Loading...</span>
+<!--<br>Dew Point: <span id="ext_dewpoint">Loading...</span>-->
 <br>Visibility: <span id="ext_visibility">Loading...</span>
 <br>Weather: <span id="ext_weather">Loading...</span>
 <br><small><br><span id="station"></span>

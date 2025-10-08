@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.08.1
+# * v2025.10.08.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.08.1"
+version = "2025.10.08.2"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -73,11 +73,15 @@ class GarageServer:
     def __init__(self, control, sensors):
         try:
             self.station = os.getenv("station")
-            self.serial = bool(os.getenv("serial"))
+            self.zipcode = os.getenv("zipcode")
+            self.country = os.getenv("country")
+            self.ow_api_key = os.getenv("ow_api_key")
         except KeyError: # If a key is not in os.environ (e.g. missing in settings.toml)
             print("A required setting was not found in settings.toml, using defaults.")
             self.station = "kbos"
-            self.serial = True
+            self.zipcode = "02139"
+            self.country = "US"
+            self.ow_api_key = "e11595e5e85bcf80302889e0f669b370"
         except Exception as e:
             print(f"Error reading settings: {e}")
 
@@ -89,6 +93,7 @@ class GarageServer:
 
         try:
             self.connect_wifi()
+            self.lat, self.lon = self.get_openweather_geoloc()
             self.setup_server()
             self.setup_ntp()
             print("\nDevice IP:", self.ip, "\nListening...")
@@ -168,6 +173,7 @@ class GarageServer:
             temperature = self.sensors.getTemperature()
             date_time = self.getDateTime()
             nws = self.get_nws_data()
+            aqi = self.get_openweather_aq()
 
             data_dict = {
                 "state": state,
@@ -179,8 +185,10 @@ class GarageServer:
                 "ext_temperature": f"{nws[0]} \u00b0C",
                 "ext_heatindex": f"{nws[1]} \u00b0C",
                 "ext_RH": f"{nws[2]} %",
+                "ext_aqi": f"{aqi[0]}",
+                "ext_aqi_color": f"{aqi[1]}",
                 "ext_pressure": f"{nws[3]} mbar",
-                "ext_dewpoint": f"{nws[4]} \u00b0C",
+                #"ext_dewpoint": f"{nws[4]} \u00b0C",
                 "ext_visibility": f"{nws[5]} m",
                 "ext_weather": nws[7],
                 "version": version,
@@ -366,6 +374,36 @@ class GarageServer:
         finally:
             if hasattr(self, 'r') and self.r:
                 self.r.close()
+
+    def get_openweather_geoloc(self):
+        pool = socketpool.SocketPool(wifi.radio)
+        server = Server(pool, debug=True)
+        requests = adafruit_requests.Session(pool, ssl.create_default_context())
+        geo_url = "http://api.openweathermap.org/geo/1.0/zip?zip="+self.zipcode+","+self.country+"&appid="+self.ow_api_key
+        r = requests.get(geo_url)
+        lat = str(r.json()["lat"])
+        lon = str(r.json()["lon"])
+        r.close()
+        return lat, lon
+        
+    def get_openweather_aq(self):
+        geo_url = "http://api.openweathermap.org/data/2.5/air_pollution?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
+        r = self.requests.get(geo_url)
+        aqi = r.json()["list"][0]["main"]["aqi"]
+        if aqi == 1:
+            col = "green"
+        elif aqi == 2:
+            col = "yellow"
+        elif aqi == 3:
+            col = "orange"
+        elif aqi == 4:
+            col = "red"
+        elif aqi == 5:
+            col = "purple"
+        else:
+            col = "white"
+        r.close()
+        return aqi, col
 
 ############################
 # Control, Sensors, and Main

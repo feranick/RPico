@@ -5,3 +5,6 @@ CIRCUITPY_WEB_API_PASSWORD="passw0rd"
 CIRCUITPY_WEB_API_PORT=205
 triggerDistance = 20
 station = "kbos"
+zipcode = "02139"
+country = "US"
+ow_api_key = "YOUR_API_KEY"

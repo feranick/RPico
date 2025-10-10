@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.09.1
+# * v2025.10.10.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -16,15 +16,15 @@ import socketpool
 import ssl
 import json
 
-from adafruit_datetime import datetime
-import adafruit_requests
-import adafruit_ntp
+#from adafruit_datetime import datetime
+#import adafruit_requests
+#import adafruit_ntp
 
 import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.09.1"
+version = "2025.10.10.1"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -93,7 +93,10 @@ class GarageServer:
 
         try:
             self.connect_wifi()
-            self.lat, self.lon = self.get_openweather_geoloc()
+            
+            #this is now handled cliet side in javascript
+            #self.lat, self.lon = self.get_openweather_geoloc()
+            
             self.setup_server()
             self.setup_ntp()
             print("\nDevice IP:", self.ip, "\nListening...")
@@ -142,7 +145,9 @@ class GarageServer:
     def setup_server(self):
         pool = socketpool.SocketPool(wifi.radio)
         self.server = Server(pool, debug=True)
-        self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
+        
+        # URL Requests are now handled with Javascript client-side.
+        #self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
         # --- Routes ---
 
@@ -164,8 +169,34 @@ class GarageServer:
         def update_status(request):
             # Use simplified Response for 200 OK
             return Response(request, "OK")
+            
+        @self.server.route("/api/status")
+        def api_status(request):
+            state = self.sensors.checkStatusSonar()
+            label = self.control.setLabel(state)
+            temperature = self.sensors.getTemperature()
 
-        # JSON API to get status and other data
+            data_dict = {
+                "state": state,
+                "button_color": label[1],
+                "temperature": temperature,
+                "ip": self.ip,
+                "ow_api_key": self.ow_api_key,
+                "station": self.station,
+                "zipcode": self.zipcode,
+                "country": self.country,
+                "version": version,
+            }
+            json_content = json.dumps(data_dict)
+
+            print(json_content)
+
+            headers = {"Content-Type": "application/json"}
+
+            # Return the response using the compatible Response constructor
+            return Response(request, json_content, headers=headers)
+
+        '''
         @self.server.route("/api/status")
         def api_status(request):
             state = self.sensors.checkStatusSonar()
@@ -203,6 +234,8 @@ class GarageServer:
 
             # Return the response using the compatible Response constructor
             return Response(request, json_content, headers=headers)
+            
+        '''
             
         @self.server.route("/scripts.js")
         def icon_route(request):
@@ -283,6 +316,10 @@ class GarageServer:
         time.sleep(2)
         microcontroller.reset()
 
+    ########################################################
+    # This is now done in javascript, client-side.
+    ########################################################
+    '''
     def getDateTime(self):
         if self.ntp and self.ntp.datetime:
             try:
@@ -408,7 +445,7 @@ class GarageServer:
         r.close()
 
         return aqi, self.col_aqi(aqi), next_aqi, self.col_aqi(next_aqi)
-        
+    
     def col_aqi(self, aqi):
         if aqi == 1:
             col = "green"
@@ -423,6 +460,7 @@ class GarageServer:
         else:
             col = "white"
         return col
+    '''
 
 ############################
 # Control, Sensors, and Main

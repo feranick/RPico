@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.08.2
+# * v2025.10.09.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.08.2"
+version = "2025.10.09.1"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -203,6 +203,14 @@ class GarageServer:
 
             # Return the response using the compatible Response constructor
             return Response(request, json_content, headers=headers)
+            
+        @self.server.route("/scripts.js")
+        def icon_route(request):
+            return self._serve_static_file(request, 'static/scripts.js')
+            
+        @self.server.route("/manifest.json")
+        def icon_route(request):
+            return self._serve_static_file(request, 'static/manifest.json')
 
         @self.server.route("/favicon.ico")
         def favicon_route(request):

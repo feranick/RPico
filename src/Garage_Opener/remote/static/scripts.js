@@ -32,7 +32,6 @@ function getCurrentDateTime() {
         
     formattedTime = hours +":"+minutes+":"+secs;
     formattedDate = month+"/"+day+"/"+year;
-    console.log(formattedDate);
     return formattedDate+"      "+formattedTime;
     }
 

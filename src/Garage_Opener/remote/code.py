@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.13.1
+# * v2025.10.13.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.13.1"
+version = "2025.10.13.2"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -98,7 +98,7 @@ class GarageServer:
             #self.lat, self.lon = self.get_openweather_geoloc()
             
             self.setup_server()
-            self.setup_ntp()
+            #self.setup_ntp()
             print("\nDevice IP:", self.ip, "\nListening...")
         except RuntimeError as err:
             print(f"Initialization error: {err}")
@@ -173,7 +173,7 @@ class GarageServer:
         @self.server.route("/api/status")
         def api_status(request):
             state = self.sensors.checkStatusSonar()
-            label = self.control.setLabel(state)
+            label = self.sensors.setLabel(state)
             temperature = self.sensors.getTemperature()
 
             data_dict = {
@@ -305,12 +305,13 @@ class GarageServer:
                 print(f"Unexpected critical error in server poll: {e}")
 
             time.sleep(0.01)
-
+    '''
     def setup_ntp(self):
         try:
             self.ntp = adafruit_ntp.NTP(socketpool.SocketPool(wifi.radio), tz_offset=-5)
         except Exception as e:
             print(f"Failed to setup NTP: {e}")
+    '''
 
     def reboot(self):
         time.sleep(2)
@@ -477,14 +478,6 @@ class Control:
         self.btn.value = False
         time.sleep(1)
 
-    def setLabel(self, a):
-        if a == "OPEN":
-            return ["CLOSE", "red"]
-        elif a == "CLOSE":
-            return ["OPEN", "green"]
-        else:
-            return ["N/A", "orange"]
-
 class Sensors:
     def __init__(self, conf):
         self.sonar = None
@@ -504,7 +497,6 @@ class Sensors:
             self.avDeltaT = 0
             print(f"Failed to initialize MCP9808: {e}")
         self.numTimes = 1
-
 
     def checkStatusSonar(self):
         if not self.sonar:
@@ -527,6 +519,14 @@ class Sensors:
                 time.sleep(0.5)
         print(" Sonar status not available")
         return "N/A"
+        
+    def setLabel(self, a):
+        if a == "OPEN":
+            return ["CLOSE", "red"]
+        elif a == "CLOSE":
+            return ["OPEN", "green"]
+        else:
+            return ["N/A", "orange"]
 
     def getTemperature(self):
         t_cpu = microcontroller.cpu.temperature

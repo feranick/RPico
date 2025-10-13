@@ -13,18 +13,27 @@ async function getFeed(url) {
 function getCurrentDateTime() {
     function get_dig(a) {
         if (a<10) {
-        secs = "0"+a;}
+            secs = "0"+a;}
         else {
-        secs = a;}
+            secs = a;}
         return secs;}
-    let now = new Date(Date.now());
+        
+    let now = new Date();
+    month = now.getMonth()+1
+    day = now.getDate()
+    year = now.getFullYear()
+    hours = get_dig(now.getHours())
+    minutes = get_dig(now.getMinutes())
+    
     if (now.getSeconds()<10) {
         secs = "0"+now.getSeconds();}
     else {
         secs = now.getSeconds();}
-        formattedTime = get_dig(now.getHours())+":"+get_dig(now.getMinutes())+":"+get_dig(now.getSeconds());
-        formattedDate = now.getMonth()+"/"+now.getDay()+"/"+now.getFullYear();
-    return formattedDate+"   "+formattedTime;
+        
+    formattedTime = hours +":"+minutes+":"+secs;
+    formattedDate = month+"/"+day+"/"+year;
+    console.log(formattedDate);
+    return formattedDate+"      "+formattedTime;
     }
 
 ////////////////////////////////////

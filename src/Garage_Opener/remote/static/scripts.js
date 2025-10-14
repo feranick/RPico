@@ -7,97 +7,6 @@ async function getFeed(url) {
     return obj;
     }
 
-////////////////////////////////////
-// Get and format Date and Time
-////////////////////////////////////
-function getCurrentDateTime() {
-    function get_dig(a) {
-        if (a<10) {
-            secs = "0"+a;}
-        else {
-            secs = a;}
-        return secs;}
-        
-    let now = new Date();
-    month = now.getMonth()+1
-    day = now.getDate()
-    year = now.getFullYear()
-    hours = get_dig(now.getHours())
-    minutes = get_dig(now.getMinutes())
-    
-    if (now.getSeconds()<10) {
-        secs = "0"+now.getSeconds();}
-    else {
-        secs = now.getSeconds();}
-        
-    formattedTime = hours +":"+minutes+":"+secs;
-    formattedDate = month+"/"+day+"/"+year;
-    return formattedDate+"      "+formattedTime;
-    }
-
-////////////////////////////////////
-// Get NWS data
-////////////////////////////////////
-async function getNWS(station) {
-    nws_url = "https://api.weather.gov/stations/"+station+"/observations/latest/";
-    let data = (await getFeed(nws_url));
-    let r = {};
-    
-    let keys = [
-            'temperature',
-            'heatIndex',
-            'relativeHumidity',
-            'seaLevelPressure',
-            'dewpoint',
-            'visibility',
-        ];
-        
-    DEFAULT_MISSING = "--";
-    let full_defaults_list = [DEFAULT_MISSING] * keys.length;
-        
-    let formats_map = {
-            'temperature': 1,
-            'heatIndex': 1,
-            'relativeHumidity': 0,
-            'seaLevelPressure': 0,
-            'dewpoint': 1,
-            'visibility': 0,
-        };
-    
-    let units_map = {
-            'temperature': 1,
-            'heatIndex': 1,
-            'relativeHumidity': 1,
-            'seaLevelPressure': 100,
-            'dewpoint': 1,
-            'visibility': 1,
-        };
-    
-    for (var i = 0; i < keys.length; i++) {
-        var format_str = formats_map[keys[i]];
-        var units_str = units_map[keys[i]];
-        var d = data['properties'][keys[i]]['value'];
-        if (typeof d === 'number' && d !== null && d !== undefined) {
-            r[keys[i]] = (d/units_str).toFixed(format_str);}
-        else{
-            r[keys[i]] = DEFAULT_MISSING;
-        }}
-        
-    r['stationName'] = data['properties']['stationName'];
-    let weather_list = data['properties']['presentWeather'];
-
-    if (weather_list && weather_list.length > 0) {
-        weather_value = weather_list[0]['weather'];
-            if (weather_value != null) {
-                r['weather'] = weather_value;
-                }
-            else {
-                r['weather'] = DEFAULT_MISSING;
-                }
-        }
-    return r;
-    }
-
 //////////////////////////////////////////////
 // Ger OpenWeather location and weather data
 //////////////////////////////////////////////
@@ -107,9 +16,8 @@ async function getCoords(zipcode, country, ow_api_key) {
     return [data["lat"], data["lon"]];
     }
 
-async function getOW(zipcode, country, ow_api_key) {
+async function getOW(coords, ow_api_key) {
     DEFAULT_MISSING = "--";
-    let coords = await getCoords(zipcode, country, ow_api_key);
     aqi_current_url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
         aqi_forecast_url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
     let r = {};
@@ -222,7 +130,104 @@ const pm10ColorRanges = [
     { min: 100, max: 200, color: "red" },       // Your original case 4
     { min: 200, max: 1e8, color: "purple" }     // Your original case 5
 ];
+
+////////////////////////////////////
+// Get NWS data
+////////////////////////////////////
+async function getNWS(coords) {
+    nws_coords_url = "https://api.weather.gov/points/"+coords[0]+","+coords[1]
+    let coordData = (await getFeed(nws_coords_url));
+    nws_stations_url = coordData["properties"]["observationStations"]
+    let stationData = (await getFeed(nws_stations_url));
+    console.log(stationData["features"][0]["id"]);
+    nws_url = stationData["features"][0]["id"]+"/observations/latest/";
     
+    let data = (await getFeed(nws_url));
+    let r = {};
+    
+    let keys = [
+            'temperature',
+            'heatIndex',
+            'relativeHumidity',
+            'seaLevelPressure',
+            'dewpoint',
+            'visibility',
+        ];
+        
+    DEFAULT_MISSING = "--";
+    let full_defaults_list = [DEFAULT_MISSING] * keys.length;
+        
+    let formats_map = {
+            'temperature': 1,
+            'heatIndex': 1,
+            'relativeHumidity': 0,
+            'seaLevelPressure': 0,
+            'dewpoint': 1,
+            'visibility': 0,
+        };
+    
+    let units_map = {
+            'temperature': 1,
+            'heatIndex': 1,
+            'relativeHumidity': 1,
+            'seaLevelPressure': 100,
+            'dewpoint': 1,
+            'visibility': 1,
+        };
+    
+    for (var i = 0; i < keys.length; i++) {
+        var format_str = formats_map[keys[i]];
+        var units_str = units_map[keys[i]];
+        var d = data['properties'][keys[i]]['value'];
+        if (typeof d === 'number' && d !== null && d !== undefined) {
+            r[keys[i]] = (d/units_str).toFixed(format_str);}
+        else{
+            r[keys[i]] = DEFAULT_MISSING;
+        }}
+        
+    r['stationName'] = data['properties']['stationName'];
+    let weather_list = data['properties']['presentWeather'];
+
+    if (weather_list && weather_list.length > 0) {
+        weather_value = weather_list[0]['weather'];
+            if (weather_value != null) {
+                r['weather'] = weather_value;
+                }
+            else {
+                r['weather'] = DEFAULT_MISSING;
+                }
+        }
+    return r;
+    }
+    
+////////////////////////////////////
+// Get and format Date and Time
+////////////////////////////////////
+function getCurrentDateTime() {
+    function get_dig(a) {
+        if (a<10) {
+            secs = "0"+a;}
+        else {
+            secs = a;}
+        return secs;}
+        
+    let now = new Date();
+    month = now.getMonth()+1
+    day = now.getDate()
+    year = now.getFullYear()
+    hours = get_dig(now.getHours())
+    minutes = get_dig(now.getMinutes())
+    
+    if (now.getSeconds()<10) {
+        secs = "0"+now.getSeconds();}
+    else {
+        secs = now.getSeconds();}
+        
+    formattedTime = hours +":"+minutes+":"+secs;
+    formattedDate = month+"/"+day+"/"+year;
+    return formattedDate+"      "+formattedTime;
+    }
+
 //////////////////////////////////////////////
 // Logic when pushing Update Status button
 //////////////////////////////////////////////
@@ -233,8 +238,14 @@ async function updateStatus() {
     
     datetime = getCurrentDateTime();
     data = await fetchLocalData();
-    nws = await getNWS(data.station);
-    ow = await getOW(data.zipcode, data.country, data.ow_api_key)
+    
+    let coords = await getCoords(data.zipcode, data.country, data.ow_api_key);
+    base_forecast_url = "https://forecast.weather.gov/MapClick.php?lat="+coords[0]+"&lon="+coords[1];
+    nws = await getNWS(coords);
+    ow = await getOW(coords, data.ow_api_key)
+    
+    //nws = await getNWS(data.station);
+    //ow = await getOW(data.zipcode, data.country, data.ow_api_key)
 
     //document.getElementById("door_status").textContent = data.state;
     document.getElementById("Submit").value = "Door Status: \n" + data.state;
@@ -243,7 +254,7 @@ async function updateStatus() {
 
     document.getElementById("temp_display").textContent = data.temperature;
 
-    document.getElementById("station").textContent = nws.stationName;
+    document.getElementById("station").innerHTML = "<a href='"+base_forecast_url+"'>"+nws.stationName+"</a>";
     document.getElementById("ext_temperature").textContent = nws.temperature+" \u00b0C";
     document.getElementById("ext_RH").textContent = nws.relativeHumidity+" %";
     document.getElementById("ext_aqi").textContent = ow.now;

@@ -102,7 +102,7 @@ async function getNWS(station) {
 // Ger OpenWeather location and weather data
 //////////////////////////////////////////////
 async function getCoords(zipcode, country, ow_api_key) {
-    geo_url = "http://api.openweathermap.org/geo/1.0/zip?zip="+zipcode+","+country+"&appid="+ow_api_key;
+    geo_url = "https://api.openweathermap.org/geo/1.0/zip?zip="+zipcode+","+country+"&appid="+ow_api_key;
     let data = (await getFeed(geo_url));
     return [data["lat"], data["lon"]];
     }
@@ -110,8 +110,8 @@ async function getCoords(zipcode, country, ow_api_key) {
 async function getOW(zipcode, country, ow_api_key) {
     DEFAULT_MISSING = "--";
     let coords = await getCoords(zipcode, country, ow_api_key);
-    aqi_current_url = "http://api.openweathermap.org/data/2.5/air_pollution?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
-        aqi_forecast_url = "http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
+    aqi_current_url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
+        aqi_forecast_url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
     let r = {};
     r.now = (await getFeed(aqi_current_url))["list"][0]["main"]["aqi"];
     r.co = (await getFeed(aqi_current_url))["list"][0]["components"]["co"];
@@ -125,7 +125,6 @@ async function getOW(zipcode, country, ow_api_key) {
     r.pred = (await getFeed(aqi_forecast_url))["list"][24]["main"]["aqi"];
     
     const keys = Object.keys(r);
-    console.log(keys.length);
     for (var i = 0; i < keys.length; i++) {
         if (typeof r[keys[i]] !== 'number' || r[keys[i]] === null || r[keys[i]] === undefined) {
             r[keys[i]] = DEFAULT_MISSING;

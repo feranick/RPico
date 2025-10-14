@@ -61,13 +61,27 @@ font-weight: bold;}
 .done{opacity:0.2;}
 .notdone{opacity:1;}
 fieldset {
-  background-color: grey;
+  background-color: #C0C0C0;
   color: white;
   max-width: 300px;
   margin: auto;
   padding: 20px;
   border: 1px solid #ccc;
   border-radius: 5px;
+}
+.two-column-layout {
+  display: flex; /* Enables flexbox layout */
+  gap: 20px;     /* Optional: Adds space between the columns */
+}
+
+.column {
+  /* This makes both columns take up equal width */
+  flex: 1;
+}
+.column label, .column input, .column textarea {
+  display: block; /* Makes labels and inputs take their own line */
+  width: 100%;    /* Makes inputs fill the column width */
+  margin-bottom: 10px;
 }
 </style>
 <script type="text/javascript" src="scripts.js" ></script>
@@ -93,6 +107,23 @@ Indoor Temperature: <span id="temp_display">...</span>
 <br>Weather: <span id="ext_weather">...</span>
 <br><small><br><span id="station"></span>
 <br><span id="datetime">Time N/A</span></small>
+</fieldset>
+<br>
+<fieldset>
+<div class="two-column-layout">
+<div class="column">
+CO: <span id="ext_co">...</span>
+<br>NO: <span id="ext_no">...</span>
+<br>NO2: <span id="ext_no2">...</span>
+<br>O3: <span id="ext_o3">...</span>
+</div>
+<div class="column">
+SO2: <span id="ext_so2">...</span>
+<br>PM2.5: <span id="ext_pm2_5">...</span>
+<br>PM10: <span id="ext_pm10">...</span>
+<br>NH3: <span id="ext_nh3">...</span>
+</div>
+</div>
 </fieldset>
 
 <br><br><small><small>Device IP: <span id="ip_address">N/A</span></small></small>

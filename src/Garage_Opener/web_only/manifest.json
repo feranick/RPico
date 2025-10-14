@@ -1,0 +1,19 @@
+{
+  "name": "Weather Info",
+  "short_name": "Weather Info",
+  "description": "Weather Info",
+  "start_url": ".",
+  "display": "standalone",
+  "icons": [
+    {
+      "src": "./icon.png",
+      "sizes": "64x64",
+      "type": "image/png"
+    },
+    {
+      "src": "./icon192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}

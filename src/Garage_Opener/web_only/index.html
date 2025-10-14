@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Weather Info</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="mobile-web-app-capable" content="yes" />
+<link rel="icon" type="image/x-icon" href="/favicon.ico">
+<link rel="icon" href="./icon.png">
+<link rel="apple-touch-icon" href="./icon192.png">
+<link rel="manifest" href="./manifest.json">
+</head>
+<body>
+<style type="text/css">
+#Submit {
+color: white;
+background-color: #155084;
+font-size: 20px;
+font-weight: bold;
+margin: 30px;
+margin-top: 10px;
+height: 200px;
+width: 250px;
+position: center;
+text-align: center;
+border-radius 15px;
+border: none;
+padding: 10px 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+position:center;
+right:0px;}
+#Status {
+background-color: #155084;
+color: white;
+font-size: 20px;
+font-weight: bold;
+margin: 30px;
+margin-top: 10px;
+height: 100px;
+width: 250px;
+position: center;
+text-align: center;
+border-radius 15px;
+border: none;
+padding: 10px 20px;
+box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+position:center;
+right:0px;}
+body{
+margin: 5px;
+font-family: Helvetica;
+text-align: center;
+min-height: 30px;
+width: 100%;
+background-position: center top;
+text-align: center;
+font-size: 20px;
+padding: 11px 0px 12px 0px;
+font-weight: bold;}
+.hidden{display: none;}
+.show{display: block;}
+.done{opacity:0.2;}
+.notdone{opacity:1;}
+fieldset {
+  background-color: #C0C0C0;
+  color: white;
+  max-width: 300px;
+  margin: auto;
+  padding: 20px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+.two-column-layout {
+  display: flex; /* Enables flexbox layout */
+  gap: 20px;     /* Optional: Adds space between the columns */
+}
+
+.column {
+  /* This makes both columns take up equal width */
+  flex: 1;
+}
+.column label, .column input, .column textarea {
+  display: block; /* Makes labels and inputs take their own line */
+  width: 100%;    /* Makes inputs fill the column width */
+  margin-bottom: 10px;
+}
+</style>
+<script type="text/javascript" src="scripts.js" ></script>
+
+<form name="statusForm">
+    <input type="button" id="Status" value="Update Status" onclick="updateStatus()" />
+    <br><label id="warnLabel"></label>
+</form>
+<fieldset>
+<br>Temperature: <span id="ext_temperature">...</span>
+<br>Real Feeling: <span id="ext_heatindex">...</span>
+<br>Relative Humidity: <span id="ext_RH">...</span>
+<br>Air Quality Index: <span id="ext_aqi">...</span> (24h: <span id="ext_next_aqi">...</span>)
+<br>Pressure: <span id="ext_pressure">...</span>
+<!--<br>Dew Point: <span id="ext_dewpoint">...</span>-->
+<br>Visibility: <span id="ext_visibility">...</span>
+<br>Weather: <span id="ext_weather">...</span>
+<br><small><br><span id="station"></span>
+<br><span id="datetime">Time N/A</span></small>
+</fieldset>
+<br>
+<fieldset>
+<div class="two-column-layout">
+<div class="column">
+CO: <span id="ext_co">...</span>
+<br>NO: <span id="ext_no">...</span>
+<br>NO2: <span id="ext_no2">...</span>
+<br>O3: <span id="ext_o3">...</span>
+</div>
+<div class="column">
+SO2: <span id="ext_so2">...</span>
+<br>PM2.5: <span id="ext_pm2_5">...</span>
+<br>PM10: <span id="ext_pm10">...</span>
+<br>NH3: <span id="ext_nh3">...</span>
+</div>
+</div>
+</fieldset>
+
+<br><br><small><small>Device IP: <span id="ip_address">N/A</span></small></small>
+<br><small><small>Version: <span id="version">N/A</span></small></small>
+</body>
+</html>

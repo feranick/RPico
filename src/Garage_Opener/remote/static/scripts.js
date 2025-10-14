@@ -156,33 +156,6 @@ async function fetchLocalData() {
 //////////////////////////////////////////////
 // Utilities
 //////////////////////////////////////////////
-//Determine color of font for AQI text
-function colAqi(aqi) {
-    let col;
-    
-    switch (aqi) {
-        case 1:
-            col = "green";
-            break;
-        case 2:
-            col = "yellow";
-            break;
-        case 3:
-            col = "orange";
-            break;
-        case 4:
-            col = "red";
-            break;
-        case 5:
-            col = "purple";
-            break;
-        default:
-            col = "white";
-            break;
-    }
-    return col;
-}
-
 function getColor(value, ranges, defaultColor = 'white') {
     // Iterate through the array of range definitions
     for (const range of ranges) {

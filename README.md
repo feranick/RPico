@@ -14,4 +14,8 @@ Code modifications for Raspberry pico can be found in `rpico_tft.py`
 For the use of the HC-SR04 sensors, a guide is available here:
 https://learn.adafruit.com/assets/85308
 
+A web version only of the Garage-Opener (with only the weather informatin) and that can run in any web browser can be found here:
+https://github.com/feranick/Weather-Info
+
+
 

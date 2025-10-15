@@ -22,7 +22,7 @@ async function getOW(coords, ow_api_key) {
     aqi_current_url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
         aqi_forecast_url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
     
-    data = (await getFeed(aqi_current_url))["list"][0]
+    let data = (await getFeed(aqi_current_url))["list"][0];
         
     let r = {};
     r.now = data["main"]["aqi"];

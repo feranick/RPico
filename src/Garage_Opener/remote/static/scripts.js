@@ -28,7 +28,7 @@ async function getOW(coords, ow_api_key) {
     r.now = data["main"]["aqi"];
     r.co = data["components"]["co"];
     r.no = data["components"]["no"];
-    r.no2 = data[0]["components"]["no2"];
+    r.no2 = data["components"]["no2"];
     r.o3 = data["components"]["o3"];
     r.so2 = data["components"]["so2"];
     r.pm2_5 = data["components"]["pm2_5"];
@@ -246,7 +246,7 @@ async function updateStatus() {
     let coords = await getCoords(data.zipcode, data.country, data.ow_api_key);
     base_forecast_url = "https://forecast.weather.gov/MapClick.php?lat="+coords[0]+"&lon="+coords[1];
     nws = await getNWS(coords);
-    ow = await getOW(coords, data.ow_api_key)
+    ow = await getOW(coords, data.ow_api_key);
     
     //nws = await getNWS(data.station);
     //ow = await getOW(data.zipcode, data.country, data.ow_api_key)

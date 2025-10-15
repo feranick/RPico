@@ -1,7 +1,7 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
 # * Sensor only
-# * v2025.10.14.2
+# * v2025.10.15.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,7 +24,7 @@ import json
 import adafruit_hcsr04
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.14.2"
+version = "2025.10.15.1"
 
 SONAR_TRIGGER = board.GP15
 SONAR_ECHO = board.GP13
@@ -140,8 +140,8 @@ class GarageServer:
             #temperature = self.sensors.getTemperature()
 
             data_dict = {
-                "state": state,
-                "button_color": label[1],
+                "state": state[0],
+                "button_color": state[1],
             }
             json_content = json.dumps(data_dict)
 
@@ -207,7 +207,7 @@ class GarageServer:
 
 
 ############################
-# Control, Sensors, and Main
+# Control, Sensors
 ############################
 
 class Sensors:
@@ -216,7 +216,6 @@ class Sensors:
         #self.mcp = None
         try:
             self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=SONAR_TRIGGER, echo_pin=SONAR_ECHO)
-            print("Sonar (HCSR04) found and initialized.")
         except Exception as e:
             print(f"Failed to initialize HCSR04: {e}")
 
@@ -244,9 +243,9 @@ class Sensors:
                 dist = self.sonar.distance
                 print("Distance: "+str(dist))
                 if dist < self.trigDist:
-                    st = ["OPEN", "green"]
+                    return ["OPEN", "red"]
                 else:
-                    st = ["CLOSE", "red"]
+                    return ["CLOSED", "green"]
                 time.sleep(0.5)
                 return st
             except RuntimeError as err:
@@ -256,25 +255,14 @@ class Sensors:
         print(" Sonar status not available")
         return ["N/A", "orange"]
 
-    def setLabel(self, a):
-        if a == "OPEN":
-            return ["CLOSE", "red"]
-        elif a == "CLOSE":
-            return ["OPEN", "green"]
-        else:
-            return ["N/A", "orange"]
 
-
+############################
+# Main
+############################
 def main():
     conf = Conf()
     sensors = Sensors(conf)
     server = GarageServer(sensors)
-
-    while True:
-        st = sensors.checkStatusSonar()
-        print(st)
-        time.sleep(2)
-
     server.serve_forever()
-
+    
 main()

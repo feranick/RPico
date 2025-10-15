@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.14.2
+# * v2025.10.15.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -16,15 +16,16 @@ import socketpool
 import ssl
 import json
 
+import adafruit_requests
+
 #from adafruit_datetime import datetime
-#import adafruit_requests
 #import adafruit_ntp
 
 import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.14.2"
+version = "2025.10.15.1"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -74,12 +75,14 @@ class Conf:
 class GarageServer:
     def __init__(self, control, sensors):
         try:
+            self.sonarURL = os.getenv("sensorURL")
             self.station = os.getenv("station")
             self.zipcode = os.getenv("zipcode")
             self.country = os.getenv("country")
             self.ow_api_key = os.getenv("ow_api_key")
         except KeyError: # If a key is not in os.environ (e.g. missing in settings.toml)
             print("A required setting was not found in settings.toml, using defaults.")
+            self.sonarURL = "192.168.1.206"
             self.station = "kbos"
             self.zipcode = "02139"
             self.country = "US"
@@ -147,9 +150,7 @@ class GarageServer:
     def setup_server(self):
         pool = socketpool.SocketPool(wifi.radio)
         self.server = Server(pool, debug=True)
-        
-        # URL Requests are now handled with Javascript client-side.
-        #self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
+        self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
         # --- Routes ---
 
@@ -174,13 +175,13 @@ class GarageServer:
             
         @self.server.route("/api/status")
         def api_status(request):
-            state = self.sensors.checkStatusSonar()
-            label = self.sensors.setLabel(state)
+            #state = self.sensors.checkStatusSonar()
+            state = self.getStatusRemoteSonar()
             temperature = self.sensors.getTemperature()
-
+            
             data_dict = {
-                "state": state,
-                "button_color": label[1],
+                "state": state[0],
+                "button_color": state[1],
                 "temperature": temperature,
                 "ip": self.ip,
                 "ow_api_key": self.ow_api_key,
@@ -307,6 +308,14 @@ class GarageServer:
                 print(f"Unexpected critical error in server poll: {e}")
 
             time.sleep(0.01)
+            
+    def getStatusRemoteSonar(self):
+        r = self.requests.get("http://"+self.sonarURL+"/api/status")
+        state = r.json()["state"]
+        button_color = r.json()["button_color"]
+        r.close()
+        return [state, button_color]
+        
     '''
     def setup_ntp(self):
         try:
@@ -318,7 +327,7 @@ class GarageServer:
     def reboot(self):
         time.sleep(2)
         microcontroller.reset()
-
+    
     ########################################################
     # This is now done in javascript, client-side.
     ########################################################
@@ -466,7 +475,7 @@ class GarageServer:
     '''
 
 ############################
-# Control, Sensors, and Main
+# Control, Sensors
 ############################
 class Control:
     def __init__(self):
@@ -486,7 +495,6 @@ class Sensors:
         self.mcp = None
         try:
             self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=SONAR_TRIGGER, echo_pin=SONAR_ECHO)
-            print("Sonar (HCSR04) found and initialized.")
         except Exception as e:
             print(f"Failed to initialize HCSR04: {e}")
 
@@ -501,6 +509,8 @@ class Sensors:
             print(f"Failed to initialize MCP9808: {e}")
         self.numTimes = 1
 
+    '''
+    # This is only needed if using on device sonar
     def checkStatusSonar(self):
         if not self.sonar:
             print("Sonar not initialized.")
@@ -511,9 +521,9 @@ class Sensors:
                 dist = self.sonar.distance
                 print("Distance: "+str(dist))
                 if dist < self.trigDist:
-                    st = "OPEN"
+                    return ["OPEN", "green"]
                 else:
-                    st = "CLOSE"
+                    return ["CLOSE", "red"]
                 time.sleep(0.5)
                 return st
             except RuntimeError as err:
@@ -521,15 +531,8 @@ class Sensors:
                 nt += 1
                 time.sleep(0.5)
         print(" Sonar status not available")
-        return "N/A"
-        
-    def setLabel(self, a):
-        if a == "OPEN":
-            return ["CLOSE", "red"]
-        elif a == "CLOSE":
-            return ["OPEN", "green"]
-        else:
-            return ["N/A", "orange"]
+        return ["N/A", "orange"]
+    '''
 
     def getTemperature(self):
         t_cpu = microcontroller.cpu.temperature
@@ -554,6 +557,9 @@ class Sensors:
             time.sleep(1)
             return str(round(t_cpu-self.avDeltaT, 1))+" \u00b0C (CPU)"
 
+############################
+# Main
+############################
 def main():
     conf = Conf()
     control = Control()

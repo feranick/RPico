@@ -232,8 +232,8 @@ function getCurrentDateTime() {
 // Logic when pushing Update Status button
 //////////////////////////////////////////////
 async function updateStatus() {
-    document.getElementById("Submit").value = "Door Status: \n Loading...";
-    document.getElementById("Status").value = "Update Status: \n Loading...";
+    document.getElementById("Submit").value = "Door \n\n Loading...";
+    document.getElementById("Status").value = "Update: \n Loading...";
     //document.getElementById("warnLabel").textContent = "Testing";
     
     datetime = getCurrentDateTime();
@@ -248,7 +248,7 @@ async function updateStatus() {
     //ow = await getOW(data.zipcode, data.country, data.ow_api_key)
 
     //document.getElementById("door_status").textContent = data.state;
-    document.getElementById("Submit").value = "Door Status: \n" + data.state;
+    document.getElementById("Submit").value = "Door \n\n" + data.state;
     document.getElementById("Submit").style.backgroundColor = data.button_color;
     document.getElementById("Status").style.backgroundColor = "navy";
 
@@ -287,7 +287,7 @@ async function updateStatus() {
     document.getElementById("version").textContent = data.version;
 
     //document.getElementById("warnLabel").textContent = "Update Status: \n Ready";
-    document.getElementById("Status").value = "Update Status";
+    document.getElementById("Status").value = "Update";
     document.getElementById("warnLabel").textContent = "";
     document.getElementById("Submit").disabled = false;
     document.getElementById("Status").disabled = false;

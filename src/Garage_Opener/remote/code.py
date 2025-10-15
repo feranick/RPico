@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.14.1
+# * v2025.10.14.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,11 +24,13 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.14.1"
+version = "2025.10.14.2"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
 DOOR_SIGNAL = board.GP22
+SONAR_TRIGGER = board.GP15
+SONAR_ECHO = board.GP14
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -483,7 +485,8 @@ class Sensors:
         self.sonar = None
         self.mcp = None
         try:
-            self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
+            self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=SONAR_TRIGGER, echo_pin=SONAR_ECHO)
+            print("Sonar (HCSR04) found and initialized.")
         except Exception as e:
             print(f"Failed to initialize HCSR04: {e}")
 
@@ -513,8 +516,8 @@ class Sensors:
                     st = "CLOSE"
                 time.sleep(0.5)
                 return st
-            except RuntimeError:
-                print(" Check Sonar Status: Retrying!")
+            except RuntimeError as err:
+                print(f" Check Sonar Status: Retrying! Error: {err}")
                 nt += 1
                 time.sleep(0.5)
         print(" Sonar status not available")

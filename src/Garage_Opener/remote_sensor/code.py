@@ -1,7 +1,7 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
 # * Sensor only
-# * v2025.10.13.2
+# * v2025.10.14.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -26,7 +26,8 @@ from adafruit_httpserver import Server, MIMETypes, Response
 
 version = "2025.10.13.1"
 
-DOOR_SIGNAL = board.GP22
+SONAR_TRIGGER = board.GP15
+SONAR_ECHO = board.GP14
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -76,10 +77,10 @@ class GarageServer:
 
         try:
             self.connect_wifi()
-            
+
             #this is now handled cliet side in javascript
             #self.lat, self.lon = self.get_openweather_geoloc()
-            
+
             self.setup_server()
             print("\nDevice IP:", self.ip, "\nListening...")
         except RuntimeError as err:
@@ -127,7 +128,7 @@ class GarageServer:
     def setup_server(self):
         pool = socketpool.SocketPool(wifi.radio)
         self.server = Server(pool, debug=True)
-        
+
         # URL Requests are now handled with Javascript client-side.
         #self.requests = adafruit_requests.Session(pool, ssl.create_default_context())
 
@@ -135,7 +136,7 @@ class GarageServer:
         @self.server.route("/api/status")
         def api_status(request):
             state = self.sensors.checkStatusSonar()
-            label = self.sensors.setLabel(state)
+            #label = self.sensors.setLabel(state)
             #temperature = self.sensors.getTemperature()
 
             data_dict = {
@@ -212,13 +213,15 @@ class GarageServer:
 class Sensors:
     def __init__(self, conf):
         self.sonar = None
-        self.mcp = None
+        #self.mcp = None
         try:
-            self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=board.GP15, echo_pin=board.GP14)
+            self.sonar = adafruit_hcsr04.HCSR04(trigger_pin=SONAR_TRIGGER, echo_pin=SONAR_ECHO)
+            print("Sonar (HCSR04) found and initialized.")
         except Exception as e:
             print(f"Failed to initialize HCSR04: {e}")
 
         self.trigDist = conf.triggerDistance
+        '''
         try:
             i2c = busio.I2C(I2C_SCL, I2C_SDA)
             self.mcp = adafruit_mcp9808.MCP9808(i2c)
@@ -227,6 +230,7 @@ class Sensors:
         except Exception as e:
             self.avDeltaT = 0
             print(f"Failed to initialize MCP9808: {e}")
+        '''
         self.numTimes = 1
 
 
@@ -240,18 +244,18 @@ class Sensors:
                 dist = self.sonar.distance
                 print("Distance: "+str(dist))
                 if dist < self.trigDist:
-                    st = "OPEN"
+                    st = ["OPEN", "green"]
                 else:
-                    st = "CLOSE"
+                    st = ["CLOSE", "red"]
                 time.sleep(0.5)
                 return st
-            except RuntimeError:
-                print(" Check Sonar Status: Retrying!")
+            except RuntimeError as err:
+                print(f" Check Sonar Status: Retrying! Error: {err}")
                 nt += 1
                 time.sleep(0.5)
         print(" Sonar status not available")
-        return "N/A"
-        
+        return ["N/A", "orange"]
+
     def setLabel(self, a):
         if a == "OPEN":
             return ["CLOSE", "red"]
@@ -265,6 +269,11 @@ def main():
     conf = Conf()
     sensors = Sensors(conf)
     server = GarageServer(sensors)
+
+    while True:
+        st = sensors.checkStatusSonar()
+        print(st)
+        time.sleep(2)
 
     server.serve_forever()
 

@@ -1,7 +1,7 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
 # * Sensor only
-# * v2025.10.14.1
+# * v2025.10.14.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -24,10 +24,10 @@ import json
 import adafruit_hcsr04
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.13.1"
+version = "2025.10.14.2"
 
 SONAR_TRIGGER = board.GP15
-SONAR_ECHO = board.GP14
+SONAR_ECHO = board.GP13
 
 ############################
 # Initial WiFi/Safe Mode Check

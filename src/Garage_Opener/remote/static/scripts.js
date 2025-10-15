@@ -18,18 +18,22 @@ async function getCoords(zipcode, country, ow_api_key) {
 
 async function getOW(coords, ow_api_key) {
     DEFAULT_MISSING = "--";
+    
     aqi_current_url = "https://api.openweathermap.org/data/2.5/air_pollution?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
         aqi_forecast_url = "https://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+coords[0]+"&lon="+coords[1]+"&appid="+ow_api_key;
+    
+    data = (await getFeed(aqi_current_url))["list"][0]
+        
     let r = {};
-    r.now = (await getFeed(aqi_current_url))["list"][0]["main"]["aqi"];
-    r.co = (await getFeed(aqi_current_url))["list"][0]["components"]["co"];
-    r.no = (await getFeed(aqi_current_url))["list"][0]["components"]["no"];
-    r.no2 = (await getFeed(aqi_current_url))["list"][0]["components"]["no2"];
-    r.o3 = (await getFeed(aqi_current_url))["list"][0]["components"]["o3"];
-    r.so2 = (await getFeed(aqi_current_url))["list"][0]["components"]["so2"];
-    r.pm2_5 = (await getFeed(aqi_current_url))["list"][0]["components"]["pm2_5"];
-    r.pm10 = (await getFeed(aqi_current_url))["list"][0]["components"]["pm10"];
-    r.nh3 = (await getFeed(aqi_current_url))["list"][0]["components"]["bh3"];
+    r.now = data["main"]["aqi"];
+    r.co = data["components"]["co"];
+    r.no = data["components"]["no"];
+    r.no2 = data[0]["components"]["no2"];
+    r.o3 = data["components"]["o3"];
+    r.so2 = data["components"]["so2"];
+    r.pm2_5 = data["components"]["pm2_5"];
+    r.pm10 = data["components"]["pm10"];
+    r.nh3 = data["components"]["bh3"];
     r.pred = (await getFeed(aqi_forecast_url))["list"][24]["main"]["aqi"];
     
     const keys = Object.keys(r);

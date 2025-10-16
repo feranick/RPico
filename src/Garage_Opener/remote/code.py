@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.15.3
+# * v2025.10.16.2
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -25,7 +25,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.15.3"
+version = "2025.10.16.2"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16

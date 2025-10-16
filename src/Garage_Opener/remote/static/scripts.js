@@ -271,8 +271,8 @@ async function updateStatus(getCoordsFlag) {
     const pollutantMap = [
     { idSuffix: "aqi_now", aqiProp: "aqi_now", colorRanges: aqiColorRanges },
     { idSuffix: "aqi_next", aqiProp: "aqi_next", colorRanges: aqiColorRanges },
-    { idSuffix: "uvi_now", aqiProp: "uvi_now", colorRanges: null },
-    { idSuffix: "uvi_next", aqiProp: "uvi_next", colorRanges: null },
+    { idSuffix: "uvi_now", aqiProp: "uvi_now", colorRanges: uvColorRanges },
+    { idSuffix: "uvi_next", aqiProp: "uvi_next", colorRanges: uvColorRanges },
     { idSuffix: "co", aqiProp: "co", colorRanges: coColorRanges },
     { idSuffix: "co2", aqiProp: "co2" }, // co2 does not appear to have a color change
     { idSuffix: "no2", aqiProp: "no2", colorRanges: no2ColorRanges },
@@ -434,6 +434,15 @@ const pm10ColorRanges = [
     { min: 255, max: 355, color: "red" },
     { min: 355, max: 425, color: "brown" },
     { min: 435, max: 1e8, color: "purple" }
+];
+
+const uvColorRanges = [
+    { min: 0, max: 2.5, color: "green" },
+    { min: 2.5, max: 3.5, color: "yellow" },
+    { min: 3.5, max: 5.5, color: "orange" },
+    { min: 5.5, max: 7.5, color: "red" },
+    { min: 7.5, max: 10.5, color: "brown" },
+    { min: 10.5, max: 1e8, color: "purple" }
 ];
 
 /**

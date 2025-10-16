@@ -10,79 +10,59 @@
 <link rel="manifest" href="./manifest.json">
 </head>
 <body>
-<style type="text/css">
-#Submit {
-color: white;
-background-color: #155084;
-font-size: 20px;
-font-weight: bold;
-margin: 30px;
-margin-top: 10px;
-height: 200px;
-width: 250px;
-position: center;
-text-align: center;
-border-radius 15px;
-border: none;
-padding: 10px 20px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-position:center;
-right:0px;}
-#Status {
-background-color: #155084;
-color: white;
-font-size: 20px;
-font-weight: bold;
-margin: 30px;
-margin-top: 10px;
-height: 100px;
-width: 250px;
-position: center;
-text-align: center;
-border-radius 15px;
-border: none;
-padding: 10px 20px;
-box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-position:center;
-right:0px;}
-body{
-margin: 5px;
-font-family: Helvetica;
-text-align: center;
-min-height: 30px;
-width: 100%;
-background-position: center top;
-text-align: center;
-font-size: 20px;
-padding: 11px 0px 12px 0px;
-font-weight: bold;}
-.hidden{display: none;}
-.show{display: block;}
-.done{opacity:0.2;}
-.notdone{opacity:1;}
+<style>
+body {
+    margin: 0;
+    font-family: Helvetica, sans-serif;
+    text-align: center;
+    padding: 11px 0;
+    font-size: 20px;
+    font-weight: bold;
+    background-color: #f0f0f0;
+}
+#Submit, #Status {
+    color: white;
+    background-color: #155084;
+    font-size: 20px;
+    font-weight: bold;
+    margin: 10px auto 10px;
+    height: 100px;
+    width: 250px;
+    text-align: center;
+    border-radius: 15px;
+    border: none;
+    padding: 10px 20px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    cursor: pointer;
+    transition: background-color 0.3s;
+}
+#Status:hover, #Submit:hover { background-color: #1e62a0; }
+#Submit { height: 200px; }
+
 fieldset {
-  background-color: #C0C0C0;
-  color: white;
-  max-width: 300px;
-  margin: auto;
-  padding: 20px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
+    background-color: #C0C0C0;
+    color: black;
+    max-width: 350px;
+    margin: 10px auto;
+    padding: 20px;
+    border: 1px solid #ccc;
+    border-radius: 10px;
 }
 .two-column-layout {
-  display: flex; /* Enables flexbox layout */
-  gap: 20px;     /* Optional: Adds space between the columns */
+    display: flex;
+    gap: 20px;
+    text-align: left;
+    font-size: 16px;
 }
-
 .column {
-  /* This makes both columns take up equal width */
-  flex: 1;
+    flex: 1;
 }
-.column label, .column input, .column textarea {
-  display: block; /* Makes labels and inputs take their own line */
-  width: 100%;    /* Makes inputs fill the column width */
-  margin-bottom: 10px;
+fieldset span {
+    min-width: 50px;
+    display: inline-block;
+    font-weight: 700;
 }
+small { display: block; margin-top: 5px; }
 </style>
 <script type="text/javascript" src="scripts.js" ></script>
 
@@ -100,8 +80,8 @@ Indoor Temperature: <span id="temp_display">...</span>
 <br>Temperature: <span id="ext_temperature">...</span>
 <br>Real Feeling: <span id="ext_heatindex">...</span>
 <br>Relative Humidity: <span id="ext_RH">...</span>
-<br>Air Quality Index: <span id="ext_aqi_now">...</span> (24h: <span id="ext_aqi_next">...</span>)
-<br>UV Index: <span id="ext_uvi_now">...</span> (24h: <span id="ext_uvi_next">...</span>)
+<br>Air Quality Index:<span id="ext_aqi_now">...</span>(24h:<span id="ext_aqi_next">...</span>)
+<br>UV Index:<span id="ext_uvi_now">...</span>(24h:<span id="ext_uvi_next">...</span>)
 <br>Pressure: <span id="ext_pressure">...</span>
 <br>Weather: <span id="ext_weather">...</span>
 <small>

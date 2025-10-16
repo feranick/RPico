@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.16.2
+# * v2025.10.16.3
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -25,7 +25,7 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.16.2"
+version = "2025.10.16.3"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
@@ -310,11 +310,15 @@ class GarageServer:
             time.sleep(0.01)
             
     def getStatusRemoteSonar(self):
-        r = self.requests.get("http://"+self.sonarURL+"/api/status")
-        state = r.json()["state"]
-        button_color = r.json()["button_color"]
-        r.close()
-        return [state, button_color]
+        try:
+            r = self.requests.get("http://"+self.sonarURL+"/api/status")
+            state = r.json()["state"]
+            button_color = r.json()["button_color"]
+            r.close()
+            return [state, button_color]
+        except Exception as e:
+            print(f"Sonar not available: {e}")
+            return ["N/A", "orange"]
         
     '''
     def setup_ntp(self):

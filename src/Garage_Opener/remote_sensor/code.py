@@ -31,8 +31,8 @@ SONAR_TRIGGER = board.GP15
 SONAR_ECHO = board.GP13
 
 BME280_CLK = board.GP18
-BME280_MOSI = board.GP16
-BME280_MISO = board.GP19
+BME280_MOSI = board.GP19
+BME280_MISO = board.GP16
 BME280_OUT = board.GP17
 
 ############################
@@ -230,9 +230,9 @@ class Sensors:
             print(f"Failed to initialize HCSR04: {e}")
 
         self.trigDist = conf.triggerDistance
-        
+
         try:
-            spi = busio.SPI(BME280_CLK, MISO=BME280_MISO, MOSI=BME280_MISO)
+            spi = busio.SPI(BME280_CLK, MISO=BME280_MISO, MOSI=BME280_MOSI)
             bme_cs = digitalio.DigitalInOut(BME280_OUT)
             self.envSensor = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
             self.avDeltaT = microcontroller.cpu.temperature - self.envSensor.temperature
@@ -243,32 +243,32 @@ class Sensors:
             print(f"Failed to initialize BME280:{e}")
 
         self.numTimes = 1
-        
+
     def getEnvData(self):
         t_cpu = microcontroller.cpu.temperature
         if self.envSensor is None:
             print("BME280 not initialized. Using CPU temp with estimated offset.")
-            
+
             if self.numTimes > 1 and self.avDeltaT != 0 :
                 return [f"{round(t_cpu - self.avDeltaT, 1)} \u00b0C (CPU adj.)", "--","--"]
             else:
                 return [f"{round(t_cpu, 1)} \u00b0C (CPU raw)", "--","--"]
-        try:
-            t_envSensor = self.envSensor.temperature
-            rh_envSensor = self.envSensor.relative_humidity
-            p_envSensor = self.envSensor.pressure
-            delta_t = t_cpu - t_envSensor
-            if self.numTimes >= 2e+1:
-                self.numTimes = int(1e+1)
-            self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
-            self.numTimes += 1
-            print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
-            time.sleep(1)
-            return [f"{str(round(t_mcp,1))} \u00b0C", str(rh_envSensor), str(p_envSensor)]
-        except:
-            print("BME280 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
-            time.sleep(1)
-            return [f"{str(round(t_cpu-self.avDeltaT, 1))} \u00b0C (CPU)","--","--"]
+        #try:
+        t_envSensor = self.envSensor.temperature
+        rh_envSensor = self.envSensor.relative_humidity
+        p_envSensor = self.envSensor.pressure
+        delta_t = t_cpu - t_envSensor
+        if self.numTimes >= 2e+1:
+            self.numTimes = int(1e+1)
+        self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
+        self.numTimes += 1
+        print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
+        time.sleep(1)
+        return [f"{str(round(t_envSensor,1))} \u00b0C", f"{str(round(rh_envSensor,0))} %", str(p_envSensor)]
+        #except:
+        #    print("BME280 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
+        #    time.sleep(1)
+        #    return [f"{str(round(t_cpu-self.avDeltaT, 1))} \u00b0C (CPU)","--","--"]
 
     def checkStatusSonar(self):
         if not self.sonar:
@@ -301,5 +301,5 @@ def main():
     sensors = Sensors(conf)
     server = GarageServer(sensors)
     server.serve_forever()
-    
+
 main()

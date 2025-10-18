@@ -1,7 +1,7 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
 # * Sensor only
-# * v2025.10.15.1
+# * v2025.10.18.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -22,12 +22,18 @@ import json
 #import adafruit_ntp
 
 import adafruit_hcsr04
+from adafruit_bme280 import basic as adafruit_bme280
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.15.1"
+version = "2025.10.18.1"
 
 SONAR_TRIGGER = board.GP15
 SONAR_ECHO = board.GP13
+
+BME280_CLK = board.GP18
+BME280_MOSI = board.GP16
+BME280_MISO = board.GP19
+BME280_OUT = board.GP17
 
 ############################
 # Initial WiFi/Safe Mode Check
@@ -138,10 +144,14 @@ class GarageServer:
             state = self.sensors.checkStatusSonar()
             #label = self.sensors.setLabel(state)
             #temperature = self.sensors.getTemperature()
+            envData = self.sensors.getEnvData()
 
             data_dict = {
                 "state": state[0],
                 "button_color": state[1],
+                "temperature": envData[0],
+                "RH": envData[1],
+                "pressure": envData[2],
             }
             json_content = json.dumps(data_dict)
 
@@ -220,18 +230,45 @@ class Sensors:
             print(f"Failed to initialize HCSR04: {e}")
 
         self.trigDist = conf.triggerDistance
-        '''
+        
         try:
-            i2c = busio.I2C(I2C_SCL, I2C_SDA)
-            self.mcp = adafruit_mcp9808.MCP9808(i2c)
-            self.avDeltaT = microcontroller.cpu.temperature - self.mcp.temperature
-            print("Temperature sensor (MCP9808) found and initialized.")
+            spi = busio.SPI(BME280_CLK, MISO=BME280_MISO, MOSI=BME280_MISO)
+            bme_cs = digitalio.DigitalInOut(BME280_OUT)
+            self.envSensor = adafruit_bme280.Adafruit_BME280_SPI(spi, bme_cs)
+            self.avDeltaT = microcontroller.cpu.temperature - self.envSensor.temperature
+            print("Temperature sensor (BME280) found and initialized.")
         except Exception as e:
+            self.envSensor = None
             self.avDeltaT = 0
-            print(f"Failed to initialize MCP9808: {e}")
-        '''
-        self.numTimes = 1
+            print(f"Failed to initialize BME280:{e}")
 
+        self.numTimes = 1
+        
+    def getEnvData(self):
+        t_cpu = microcontroller.cpu.temperature
+        if self.envSensor is None:
+            print("BME280 not initialized. Using CPU temp with estimated offset.")
+            
+            if self.numTimes > 1 and self.avDeltaT != 0 :
+                return [f"{round(t_cpu - self.avDeltaT, 1)} \u00b0C (CPU adj.)", "--","--"]
+            else:
+                return [f"{round(t_cpu, 1)} \u00b0C (CPU raw)", "--","--"]
+        try:
+            t_envSensor = self.envSensor.temperature
+            rh_envSensor = self.envSensor.relative_humidity
+            p_envSensor = self.envSensor.pressure
+            delta_t = t_cpu - t_envSensor
+            if self.numTimes >= 2e+1:
+                self.numTimes = int(1e+1)
+            self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
+            self.numTimes += 1
+            print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
+            time.sleep(1)
+            return [f"{str(round(t_mcp,1))} \u00b0C", str(rh_envSensor), str(p_envSensor)]
+        except:
+            print("BME280 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
+            time.sleep(1)
+            return [f"{str(round(t_cpu-self.avDeltaT, 1))} \u00b0C (CPU)","--","--"]
 
     def checkStatusSonar(self):
         if not self.sonar:

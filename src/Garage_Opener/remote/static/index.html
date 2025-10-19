@@ -37,7 +37,7 @@ body {
     transition: background-color 0.3s;
 }
 #Status:hover, #Submit:hover { background-color: #1e62a0; }
-#Submit { height: 200px; }
+#Submit { height: 150px; }
 
 fieldset {
     background-color: #C0C0C0;
@@ -75,9 +75,13 @@ small { display: block; margin-top: 5px; }
     <br><label id="warnLabel"></label>
 </form>
 <fieldset>
-Indoor Temperature: <span id="temp_display">...</span>
-<br>
-<br>Temperature: <span id="ext_temperature">...</span>
+Indoor T: <span id="locTemp">...</span>
+   RH: <span id="locRH">...</span>
+<br>Garage T: <span id="remoteTemp">...</span>
+   RH: <span id="remoteRH">...</span>
+</fieldset>
+<fieldset>
+Temperature: <span id="ext_temperature">...</span>
 <br>Real Feeling: <span id="ext_heatindex">...</span>
 <br>Relative Humidity: <span id="ext_RH">...</span>
 <br>Air Quality Index:<span id="ext_aqi_now">...</span>(24h:<span id="ext_aqi_next">...</span>)
@@ -89,10 +93,9 @@ Indoor Temperature: <span id="temp_display">...</span>
 <br>Dew Point: <span id="ext_dewpoint">...</span>
 <br>Wet Bulb Temp.: <span id="ext_wetbulb">...</span>
 </small>
-<br><small><br><span id="station"></span>
+<small><br><span id="station"></span>
 <br><span id="datetime">Time N/A</span></small>
 </fieldset>
-<br>
 <fieldset>
 <div class="two-column-layout">
 <div class="column">

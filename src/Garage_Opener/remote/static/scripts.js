@@ -222,11 +222,11 @@ async function getNWS(coords) {
 //////////////////////////////////////////////
 // Ger Local Data from Pico
 //////////////////////////////////////////////
-async function fetchLocalData() {
+async function fetchData() {
     try {
         const response = await fetch('/api/status');
         const data = await response.json();
-        //console.log("Using data inside the async function:", data);
+        console.log(data);
         return data;
         
     } catch (error) {
@@ -246,7 +246,8 @@ async function updateStatus(getCoordsFlag) {
     //document.getElementById("warnLabel").textContent = "Testing";
     
     datetime = getCurrentDateTime();
-    data = await fetchLocalData();
+    data = await fetchData();
+    console.log(data);
     
     let coords = await getCoords(data.zipcode, data.country, data.ow_api_key);
     
@@ -261,7 +262,10 @@ async function updateStatus(getCoordsFlag) {
     document.getElementById("Submit").style.backgroundColor = data.button_color;
     document.getElementById("Status").style.backgroundColor = "navy";
 
-    document.getElementById("temp_display").textContent = data.temperature;
+    document.getElementById("locTemp").textContent = data.locTemp;
+    document.getElementById("remoteTemp").textContent = data.remoteTemp;
+    document.getElementById("locRH").textContent = "--";
+    document.getElementById("remoteRH").textContent = data.remoteRH;
 
     document.getElementById("station").innerHTML = "<a href='"+base_forecast_url+"'>"+nws.stationName+"</a>";
     

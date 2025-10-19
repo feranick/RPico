@@ -1,6 +1,6 @@
 # **********************************************
 # * Garage Opener - Rasperry Pico W
-# * v2025.10.16.3
+# * v2025.10.18.1
 # * By: Nicola Ferralis <feranick@hotmail.com>
 # **********************************************
 
@@ -25,11 +25,11 @@ import adafruit_hcsr04
 import adafruit_mcp9808
 from adafruit_httpserver import Server, MIMETypes, Response
 
-version = "2025.10.16.3"
+version = "2025.10.18.1"
 
 I2C_SCL = board.GP17
 I2C_SDA = board.GP16
-DOOR_SIGNAL = board.GP22
+DOOR_SIGNAL = board.GP18
 SONAR_TRIGGER = board.GP15
 SONAR_ECHO = board.GP14
 
@@ -98,10 +98,10 @@ class GarageServer:
 
         try:
             self.connect_wifi()
-            
+
             #this is now handled cliet side in javascript
             #self.lat, self.lon = self.get_openweather_geoloc()
-            
+
             self.setup_server()
             #self.setup_ntp()
             print("\nDevice IP:", self.ip, "\nListening...")
@@ -172,17 +172,20 @@ class GarageServer:
         def update_status(request):
             # Use simplified Response for 200 OK
             return Response(request, "OK")
-            
+
         @self.server.route("/api/status")
         def api_status(request):
             #state = self.sensors.checkStatusSonar()
-            state = self.getStatusRemoteSonar()
+            remoteData = self.getStatusRemoteSonar()
             temperature = self.sensors.getTemperature()
-            
+
             data_dict = {
-                "state": state[0],
-                "button_color": state[1],
-                "temperature": temperature,
+                "state": remoteData['state'],
+                "button_color": remoteData['button_color'],
+                "locTemp": temperature,
+                "remoteTemp": remoteData['temperature'],
+                "remoteRH": remoteData['RH'],
+                "remoteURL" : self.sonarURL,
                 "ip": self.ip,
                 "ow_api_key": self.ow_api_key,
                 "station": self.station,
@@ -237,13 +240,13 @@ class GarageServer:
 
             # Return the response using the compatible Response constructor
             return Response(request, json_content, headers=headers)
-            
+
         '''
-            
+
         @self.server.route("/scripts.js")
         def icon_route(request):
             return self._serve_static_file(request, 'static/scripts.js')
-            
+
         @self.server.route("/manifest.json")
         def icon_route(request):
             return self._serve_static_file(request, 'static/manifest.json')
@@ -308,18 +311,20 @@ class GarageServer:
                 print(f"Unexpected critical error in server poll: {e}")
 
             time.sleep(0.01)
-            
+
     def getStatusRemoteSonar(self):
         try:
             r = self.requests.get("http://"+self.sonarURL+"/api/status")
-            state = r.json()["state"]
-            button_color = r.json()["button_color"]
+            data = r.json()
+            #state = data["state"]
+            #button_color = data["button_color"]
             r.close()
-            return [state, button_color]
+            print("DATA",data)
+            return data
         except Exception as e:
             print(f"Sonar not available: {e}")
-            return ["N/A", "orange"]
-        
+            return {'pressure': '--', 'button_color': 'orange', 'state': 'N/A', 'RH': '--', 'temperature': '--'}
+
     '''
     def setup_ntp(self):
         try:
@@ -331,7 +336,7 @@ class GarageServer:
     def reboot(self):
         time.sleep(2)
         microcontroller.reset()
-    
+
     ########################################################
     # This is now done in javascript, client-side.
     ########################################################
@@ -448,20 +453,20 @@ class GarageServer:
         lon = str(r.json()["lon"])
         r.close()
         return lat, lon
-        
+
     def get_openweather_aq(self):
         aqi_current_url = "http://api.openweathermap.org/data/2.5/air_pollution?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
         aqi_forecast_url = "http://api.openweathermap.org/data/2.5/air_pollution/forecast?lat="+self.lat+"&lon="+self.lon+"&appid="+self.ow_api_key
         r = self.requests.get(aqi_current_url)
         aqi = r.json()["list"][0]["main"]["aqi"]
         r.close()
-        
+
         r = self.requests.get(aqi_forecast_url)
         next_aqi = r.json()["list"][24]["main"]["aqi"]
         r.close()
 
         return aqi, self.col_aqi(aqi), next_aqi, self.col_aqi(next_aqi)
-    
+
     def col_aqi(self, aqi):
         if aqi == 1:
             col = "green"

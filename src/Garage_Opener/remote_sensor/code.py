@@ -253,22 +253,22 @@ class Sensors:
                 return [f"{round(t_cpu - self.avDeltaT, 1)} \u00b0C (CPU adj.)", "--","--"]
             else:
                 return [f"{round(t_cpu, 1)} \u00b0C (CPU raw)", "--","--"]
-        #try:
-        t_envSensor = self.envSensor.temperature
-        rh_envSensor = self.envSensor.relative_humidity
-        p_envSensor = self.envSensor.pressure
-        delta_t = t_cpu - t_envSensor
-        if self.numTimes >= 2e+1:
-            self.numTimes = int(1e+1)
-        self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
-        self.numTimes += 1
-        print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
-        time.sleep(1)
-        return [f"{str(round(t_envSensor,1))} \u00b0C", f"{str(round(rh_envSensor,0))} %", str(p_envSensor)]
-        #except:
-        #    print("BME280 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
-        #    time.sleep(1)
-        #    return [f"{str(round(t_cpu-self.avDeltaT, 1))} \u00b0C (CPU)","--","--"]
+        try:
+            t_envSensor = self.envSensor.temperature
+            rh_envSensor = self.envSensor.relative_humidity
+            p_envSensor = self.envSensor.pressure
+            delta_t = t_cpu - t_envSensor
+            if self.numTimes >= 2e+1:
+                self.numTimes = int(1e+1)
+            self.avDeltaT = (self.avDeltaT * self.numTimes + delta_t)/(self.numTimes+1)
+            self.numTimes += 1
+            print("Av. CPU/MCP T diff: "+str(self.avDeltaT)+" "+str(self.numTimes))
+            time.sleep(1)
+            return [f"{str(round(t_envSensor,1))} \u00b0C", f"{str(round(rh_envSensor,0))} %", str(p_envSensor)]
+        except:
+            print("BME280 not available. Av CPU/MCP T diff: "+str(self.avDeltaT))
+            time.sleep(1)
+            return [f"{str(round(t_cpu-self.avDeltaT, 1))} \u00b0C (CPU)","--","--"]
 
     def checkStatusSonar(self):
         if not self.sonar:

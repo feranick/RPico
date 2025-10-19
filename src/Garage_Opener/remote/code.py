@@ -316,10 +316,7 @@ class GarageServer:
         try:
             r = self.requests.get("http://"+self.sonarURL+"/api/status")
             data = r.json()
-            #state = data["state"]
-            #button_color = data["button_color"]
             r.close()
-            print("DATA",data)
             return data
         except Exception as e:
             print(f"Sonar not available: {e}")
